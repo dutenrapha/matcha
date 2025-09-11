@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: tinder_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tinder_clone
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: tinder_mailhog
+    restart: always
+    ports:
+      - "8025:8025"   # Web UI http://localhost:8025
+      - "1025:1025"   # SMTP Port
+
+  api:
+    build: .
+    container_name: tinder_api
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/tinder_clone
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_USER: ""
+      SMTP_PASS: ""
+      SMTP_FROM: "Matcha Clone <no-reply@matcha.com>"
+      SECRET_KEY: "your-super-secret-key-change-this-in-production"
+      ALGORITHM: "HS256"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - mailhog
+    volumes:
+      - .:/app
+
+volumes:
+  postgres_data:
