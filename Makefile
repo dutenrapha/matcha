@@ -2,6 +2,7 @@
 DOCKER_COMPOSE = docker-compose
 API_SERVICE = api
 DB_SERVICE = db
+FRONTEND_SERVICE = frontend
 
 # Subir containers
 up:
@@ -22,6 +23,10 @@ logs-api:
 # Logs do banco
 logs-db:
 	$(DOCKER_COMPOSE) logs -f $(DB_SERVICE)
+
+# Logs do frontend
+logs-frontend:
+	$(DOCKER_COMPOSE) logs -f $(FRONTEND_SERVICE)
 
 # Acessar banco
 psql:
@@ -54,3 +59,14 @@ reset:
 # Subir com logs (foreground)
 dev:
 	$(DOCKER_COMPOSE) up
+
+# Comandos específicos do frontend
+frontend-install:
+	$(DOCKER_COMPOSE) run --rm $(FRONTEND_SERVICE) npm install
+
+frontend-build:
+	$(DOCKER_COMPOSE) run --rm $(FRONTEND_SERVICE) npm run build
+
+# Acessar shell do frontend
+frontend-shell:
+	$(DOCKER_COMPOSE) exec -it $(FRONTEND_SERVICE) /bin/sh

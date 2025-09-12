@@ -10,7 +10,7 @@ from app.utils.jwt import create_access_token, verify_token, get_jti_from_token
 from typing import Optional
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 async def get_current_user(token: str = Depends(oauth2_scheme), conn=Depends(get_connection)):
     """Dependência para obter usuário atual via JWT"""
@@ -247,7 +247,7 @@ async def logout(token: str = Depends(oauth2_scheme), conn=Depends(get_connectio
     
     jti = payload.get("jti")
     user_id_str = payload.get("sub")
-    expires_at = datetime.fromtimestamp(payload.get("exp", 0))
+    expires_at = datetime.datetime.fromtimestamp(payload.get("exp", 0))
     
     if not jti or not user_id_str:
         raise HTTPException(

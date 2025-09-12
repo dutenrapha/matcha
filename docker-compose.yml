@@ -44,5 +44,19 @@ services:
     volumes:
       - .:/app
 
+  frontend:
+    build: ./frontend
+    container_name: matcha_frontend
+    restart: always
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
 volumes:
   postgres_data:

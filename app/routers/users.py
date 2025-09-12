@@ -21,11 +21,15 @@ async def create_user(user: UserCreate, conn=Depends(get_connection)):
     hashed = hash_password(user.password)
 
     try:
-        await conn.execute("""
+        result = await conn.fetchrow("""
             INSERT INTO users (name, email, password_hash)
             VALUES ($1, $2, $3)
+            RETURNING user_id
         """, user.name, user.email, hashed)
-        return {"message": "User created successfully"}
+        return {
+            "message": "User created successfully",
+            "user_id": result["user_id"]
+        }
     except asyncpg.UniqueViolationError:
         raise HTTPException(status_code=400, detail="Email already exists")
 
