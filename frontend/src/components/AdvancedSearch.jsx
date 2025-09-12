@@ -130,6 +130,10 @@ const AdvancedSearch = () => {
   const handleNextProfile = () => {
     if (currentIndex < searchResults.length - 1) {
       setCurrentIndex(currentIndex + 1);
+    } else {
+      // Se não há mais perfis, limpar a lista
+      setSearchResults([]);
+      setCurrentIndex(0);
     }
   };
 

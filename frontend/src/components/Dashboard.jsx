@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import ProfileEdit from './ProfileEdit';
 import DiscoverProfiles from './DiscoverProfiles';
 import AdvancedSearch from './AdvancedSearch';
+import MatchesList from './MatchesList';
 import './Dashboard.css';
 
 // Componentes das seções (placeholder por enquanto)
@@ -46,6 +47,12 @@ const DiscoverSection = () => (
 const SearchSection = () => (
   <div className="section-content">
     <AdvancedSearch />
+  </div>
+);
+
+const MatchesSection = () => (
+  <div className="section-content">
+    <MatchesList />
   </div>
 );
 
@@ -93,6 +100,7 @@ const Dashboard = () => {
     { id: 'profile', label: 'Meu Perfil', icon: '👤', component: ProfileSection },
     { id: 'discover', label: 'Descobrir', icon: '🔍', component: DiscoverSection },
     { id: 'search', label: 'Busca', icon: '🔎', component: SearchSection },
+    { id: 'matches', label: 'Matches', icon: '💕', component: MatchesSection },
     { id: 'chat', label: 'Chat', icon: '💬', component: ChatSection },
     { id: 'notifications', label: 'Notificações', icon: '🔔', component: NotificationsSection },
     { id: 'settings', label: 'Configurações', icon: '⚙️', component: SettingsSection },

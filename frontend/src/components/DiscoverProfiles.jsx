@@ -52,19 +52,11 @@ const DiscoverProfiles = () => {
     if (currentIndex < profiles.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      // Carregar mais perfis quando chegar ao final
-      loadMoreProfiles();
+      // Se não há mais perfis, recarregar a lista
+      loadProfiles();
     }
   };
 
-  const loadMoreProfiles = async () => {
-    try {
-      const moreProfiles = await profileService.discoverProfiles(user.user_id, 10);
-      setProfiles(prev => [...prev, ...moreProfiles]);
-    } catch (err) {
-      console.error('Erro ao carregar mais perfis:', err);
-    }
-  };
 
   const handleRefresh = () => {
     loadProfiles();

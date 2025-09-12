@@ -244,4 +244,37 @@ export const searchService = {
   },
 };
 
+// Serviços de matches
+export const matchesService = {
+  // Obter matches do usuário
+  getMatches: async (userId) => {
+    const response = await api.get(`/matches/${userId}`);
+    return response.data;
+  },
+
+  // Obter matches com perfis
+  getMatchesWithProfiles: async (userId) => {
+    const response = await api.get(`/matches/${userId}/with-profiles`);
+    return response.data;
+  },
+
+  // Obter contagem de matches
+  getMatchCount: async (userId) => {
+    const response = await api.get(`/matches/${userId}/count`);
+    return response.data;
+  },
+
+  // Obter estatísticas de matches
+  getMatchStats: async (userId) => {
+    const response = await api.get(`/matches/${userId}/stats`);
+    return response.data;
+  },
+
+  // Deletar match (unmatch)
+  deleteMatch: async (matchId) => {
+    const response = await api.delete(`/matches/${matchId}`);
+    return response.data;
+  },
+};
+
 export default api;

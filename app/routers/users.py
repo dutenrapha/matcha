@@ -66,7 +66,7 @@ async def advanced_search(
 
     # Query base
     base_query = """
-        SELECT u.user_id, u.name, u.fame_rating,
+        SELECT u.user_id, u.name, COALESCE(u.fame_rating, 0) as fame_rating,
                p.age, p.gender, p.latitude, p.longitude, p.avatar_url,
                (6371 * acos(
                    cos(radians($2)) * cos(radians(p.latitude)) *
