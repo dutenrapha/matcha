@@ -210,4 +210,38 @@ export const swipeService = {
   },
 };
 
+// Serviços de busca
+export const searchService = {
+  // Busca avançada
+  advancedSearch: async (currentUserId, filters = {}) => {
+    const params = new URLSearchParams();
+    params.append('current_user_id', currentUserId);
+    
+    if (filters.age_min) params.append('age_min', filters.age_min);
+    if (filters.age_max) params.append('age_max', filters.age_max);
+    if (filters.fame_min) params.append('fame_min', filters.fame_min);
+    if (filters.fame_max) params.append('fame_max', filters.fame_max);
+    if (filters.max_distance_km) params.append('max_distance_km', filters.max_distance_km);
+    if (filters.tags && filters.tags.length > 0) {
+      filters.tags.forEach(tag => params.append('tags', tag));
+    }
+    if (filters.sort_by) params.append('sort_by', filters.sort_by);
+    
+    const response = await api.get(`/users/search?${params.toString()}`);
+    return response.data;
+  },
+  
+  // Buscar tags
+  searchTags: async (query, limit = 10) => {
+    const response = await api.get(`/tags/search/${query}?limit=${limit}`);
+    return response.data;
+  },
+  
+  // Top famosos próximos
+  getTopFame: async (userId) => {
+    const response = await api.get(`/users/top-fame/${userId}`);
+    return response.data;
+  },
+};
+
 export default api;

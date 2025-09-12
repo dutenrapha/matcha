@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import ProfileEdit from './ProfileEdit';
 import DiscoverProfiles from './DiscoverProfiles';
+import AdvancedSearch from './AdvancedSearch';
 import './Dashboard.css';
 
 // Componentes das seções (placeholder por enquanto)
@@ -44,11 +45,7 @@ const DiscoverSection = () => (
 
 const SearchSection = () => (
   <div className="section-content">
-    <h2>🔎 Busca Avançada</h2>
-    <p>Use filtros específicos para encontrar exatamente o que procura.</p>
-    <div className="placeholder-content">
-      <p>🚧 Funcionalidade em desenvolvimento...</p>
-    </div>
+    <AdvancedSearch />
   </div>
 );
 
