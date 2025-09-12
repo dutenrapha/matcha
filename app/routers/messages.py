@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.db import get_connection
 from app.schemas.messages import MessageIn, MessageOut, MessageWithSender
+from app.routers.ws_notifications import save_notification, push_notification
+from datetime import datetime
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
@@ -23,6 +25,37 @@ async def send_message(message: MessageIn, conn=Depends(get_connection)):
         INSERT INTO messages (chat_id, sender_id, content)
         VALUES ($1, $2, $3)
     """, message.chat_id, message.sender_id, message.content)
+    
+    # Buscar informações do destinatário e remetente para notificação
+    recipient_info = await conn.fetchrow("""
+        SELECT 
+            CASE 
+                WHEN m.user1_id = $1 THEN m.user2_id 
+                ELSE m.user1_id 
+            END as recipient_id,
+            u.name as sender_name
+        FROM matches m
+        JOIN users u ON u.user_id = $1
+        WHERE m.match_id = (
+            SELECT match_id FROM chats WHERE chat_id = $2
+        )
+    """, message.sender_id, message.chat_id)
+    
+    if recipient_info:
+        # Criar notificação para o destinatário
+        content = f"{recipient_info['sender_name']} enviou uma mensagem 💬"
+        
+        # Salvar notificação no banco
+        await save_notification(conn, recipient_info['recipient_id'], "message", content)
+        
+        # Enviar notificação em tempo real
+        notification_data = {
+            "user_id": recipient_info['recipient_id'],
+            "type": "message",
+            "content": content,
+            "created_at": datetime.utcnow().isoformat() + "Z"
+        }
+        await push_notification(recipient_info['recipient_id'], notification_data)
     
     return {"message": "Message sent successfully"}
 

@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.db import get_connection
 from app.schemas.views import ViewIn, ViewOut, ViewWithProfile
+from app.routers.ws_notifications import save_notification, push_notification
+from datetime import datetime
 
 router = APIRouter(prefix="/views", tags=["views"])
 
@@ -16,6 +18,27 @@ async def add_view(view: ViewIn, conn=Depends(get_connection)):
         INSERT INTO profile_views (viewer_id, viewed_id)
         VALUES ($1, $2)
     """, view.viewer_id, view.viewed_id)
+    
+    # Buscar nome do visualizador para notificação
+    viewer_info = await conn.fetchrow("""
+        SELECT name FROM users WHERE user_id = $1
+    """, view.viewer_id)
+    
+    if viewer_info:
+        # Criar notificação para o usuário visualizado
+        content = f"{viewer_info['name']} visualizou seu perfil 👁️"
+        
+        # Salvar notificação no banco
+        await save_notification(conn, view.viewed_id, "view", content)
+        
+        # Enviar notificação em tempo real
+        notification_data = {
+            "user_id": view.viewed_id,
+            "type": "view",
+            "content": content,
+            "created_at": datetime.utcnow().isoformat() + "Z"
+        }
+        await push_notification(view.viewed_id, notification_data)
     
     return {"message": "View recorded successfully"}
 

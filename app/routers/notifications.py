@@ -32,7 +32,7 @@ async def get_notification_count(user_id: int, conn=Depends(get_connection)):
     """Obter contagem de notificações não lidas"""
     count = await conn.fetchval("""
         SELECT COUNT(*) FROM notifications 
-        WHERE user_id = $1 AND is_read = false
+        WHERE user_id = $1 AND (is_read = false OR is_read IS NULL)
     """, user_id)
     
     return {"user_id": user_id, "unread_count": count}

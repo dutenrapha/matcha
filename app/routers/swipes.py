@@ -87,6 +87,22 @@ async def add_swipe(swipe: SwipeIn, conn=Depends(get_connection)):
         }
         await push_notification(swipe.swiped_id, notif)
     
+    elif swipe.direction == "dislike":
+        # Buscar nome do usuário que deu dislike
+        disliker = await conn.fetchrow("SELECT name FROM users WHERE user_id = $1", swipe.swiper_id)
+        
+        # Criar notificação de unlike
+        content = f"{disliker['name'] if disliker else 'Alguém'} descurtiu seu perfil 💔"
+        await save_notification(conn, swipe.swiped_id, "unlike", content)
+        
+        notif = {
+            "user_id": swipe.swiped_id,
+            "type": "unlike",
+            "content": content,
+            "created_at": datetime.utcnow().isoformat() + "Z"
+        }
+        await push_notification(swipe.swiped_id, notif)
+    
     return {"message": "Swipe registered"}
 
 @router.get("/{user_id}/likes", response_model=list)
