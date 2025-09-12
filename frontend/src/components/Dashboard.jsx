@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import ProfileEdit from './ProfileEdit';
+import DiscoverProfiles from './DiscoverProfiles';
 import './Dashboard.css';
 
 // Componentes das seções (placeholder por enquanto)
@@ -37,11 +38,7 @@ const ProfileSection = () => (
 
 const DiscoverSection = () => (
   <div className="section-content">
-    <h2>🔍 Descobrir</h2>
-    <p>Encontre pessoas interessantes baseado em suas preferências.</p>
-    <div className="placeholder-content">
-      <p>🚧 Funcionalidade em desenvolvimento...</p>
-    </div>
+    <DiscoverProfiles />
   </div>
 );
 

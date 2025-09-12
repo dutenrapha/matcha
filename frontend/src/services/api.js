@@ -185,4 +185,29 @@ export const tagsService = {
   },
 };
 
+// Serviços de swipe
+export const swipeService = {
+  // Dar like/dislike
+  addSwipe: async (swiperId, swipedId, direction) => {
+    const response = await api.post('/swipes/', {
+      swiper_id: swiperId,
+      swiped_id: swipedId,
+      direction: direction
+    });
+    return response.data;
+  },
+
+  // Obter likes recebidos
+  getLikesReceived: async (userId) => {
+    const response = await api.get(`/swipes/likes-received/${userId}`);
+    return response.data;
+  },
+
+  // Obter swipes dados
+  getSwipesGiven: async (userId) => {
+    const response = await api.get(`/swipes/given/${userId}`);
+    return response.data;
+  },
+};
+
 export default api;

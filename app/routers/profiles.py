@@ -113,45 +113,79 @@ async def discover_profiles(user_id: int, limit: int = 10, conn=Depends(get_conn
     """, user_id)
     
     if not prefs:
-        raise HTTPException(status_code=404, detail="User preferences not found")
+        # Se não tem preferências, usar valores padrão
+        profile = await conn.fetchrow("""
+            SELECT latitude, longitude FROM profiles WHERE user_id = $1
+        """, user_id)
+        
+        if not profile or profile['latitude'] is None or profile['longitude'] is None:
+            raise HTTPException(status_code=400, detail="User location not set. Please update your profile with location.")
+        
+        # Usar preferências padrão
+        prefs = {
+            'preferred_gender': 'both',
+            'age_min': 18,
+            'age_max': 50,
+            'max_distance_km': 50,
+            'latitude': profile['latitude'],
+            'longitude': profile['longitude']
+        }
+    
+    # Validar se as preferências têm todos os campos necessários
+    if not all(key in prefs for key in ['latitude', 'longitude', 'age_min', 'age_max', 'preferred_gender', 'max_distance_km']):
+        raise HTTPException(status_code=400, detail="Incomplete user preferences")
+    
+    # Garantir que os valores são válidos
+    if prefs['latitude'] is None or prefs['longitude'] is None:
+        raise HTTPException(status_code=400, detail="User location not set")
+    
+    # Debug: imprimir preferências
+    print(f"DEBUG: User {user_id} preferences: {dict(prefs)}")
     
     # Obter usuários já visualizados
     viewed_users = await conn.fetch("""
         SELECT DISTINCT viewed_id FROM profile_views WHERE viewer_id = $1
     """, user_id)
-    viewed_ids = [row["viewed_id"] for row in viewed_users]
+    viewed_ids = [int(row["viewed_id"]) for row in viewed_users]
     
     # Obter usuários já com swipe
     swiped_users = await conn.fetch("""
         SELECT DISTINCT swiped_id FROM swipes WHERE swiper_id = $1
     """, user_id)
-    swiped_ids = [row["swiped_id"] for row in swiped_users]
+    swiped_ids = [int(row["swiped_id"]) for row in swiped_users]
     
     # Combinar listas de exclusão
     exclude_ids = list(set(viewed_ids + swiped_ids + [user_id]))
+    
+    # Se não há IDs para excluir, usar uma lista com o próprio usuário
+    if not exclude_ids:
+        exclude_ids = [user_id]
+    
+    # Debug: imprimir IDs de exclusão
+    print(f"DEBUG: Exclude IDs: {exclude_ids}")
     
     # Query para descobrir perfis
     rows = await conn.fetch("""
         SELECT u.user_id, u.name, u.fame_rating,
                p.age, p.bio, p.gender, p.avatar_url,
                (6371 * acos(
-                   cos(radians($2)) * cos(radians(p.latitude)) *
-                   cos(radians(p.longitude) - radians($3)) +
-                   sin(radians($2)) * sin(radians(p.latitude))
+                   cos(radians($1)) * cos(radians(p.latitude)) *
+                   cos(radians(p.longitude) - radians($2)) +
+                   sin(radians($1)) * sin(radians(p.latitude))
                )) AS distance
         FROM users u
         JOIN profiles p ON u.user_id = p.user_id
-        WHERE u.user_id <> ALL($4)
-          AND p.age BETWEEN $5 AND $6
-          AND ($7 = 'both' OR p.gender = $7)
+        WHERE u.user_id <> ALL($3)
+          AND p.age BETWEEN $4 AND $5
+          AND ($6 = 'both' OR p.gender = $6)
           AND (6371 * acos(
-                   cos(radians($2)) * cos(radians(p.latitude)) *
-                   cos(radians(p.longitude) - radians($3)) +
-                   sin(radians($2)) * sin(radians(p.latitude))
-              )) <= $8
+                   cos(radians($1)) * cos(radians(p.latitude)) *
+                   cos(radians(p.longitude) - radians($2)) +
+                   sin(radians($1)) * sin(radians(p.latitude))
+              )) <= $7
         ORDER BY u.fame_rating DESC, distance ASC
-        LIMIT $9
-    """, user_id, prefs["latitude"], prefs["longitude"], exclude_ids,
+        LIMIT $8
+    """, prefs["latitude"], prefs["longitude"], exclude_ids,
          prefs["age_min"], prefs["age_max"], prefs["preferred_gender"], 
          prefs["max_distance_km"], limit)
     
