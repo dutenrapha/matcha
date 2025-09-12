@@ -4,7 +4,7 @@ import { matchesService } from '../services/api';
 import ProfileDetail from './ProfileDetail';
 import './MatchesList.css';
 
-const MatchesList = () => {
+const MatchesList = ({ onNavigateToChat }) => {
   const { user } = useAuth();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -152,6 +152,7 @@ const MatchesList = () => {
         isOpen={isProfileDetailOpen}
         onClose={handleCloseProfileDetail}
         isMatch={true}
+        onNavigateToChat={onNavigateToChat}
       />
     </div>
   );

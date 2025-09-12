@@ -277,4 +277,92 @@ export const matchesService = {
   },
 };
 
+// Serviços de chat
+export const chatService = {
+  // Obter chats do usuário
+  getUserChats: async (userId) => {
+    const response = await api.get(`/chats/${userId}`);
+    return response.data;
+  },
+
+  // Obter chats com perfis
+  getChatsWithProfiles: async (userId) => {
+    const response = await api.get(`/chats/${userId}/with-profiles`);
+    return response.data;
+  },
+
+  // Obter informações do chat
+  getChatInfo: async (chatId) => {
+    const response = await api.get(`/chats/${chatId}/info`);
+    return response.data;
+  },
+
+  // Obter participantes do chat
+  getChatParticipants: async (chatId) => {
+    const response = await api.get(`/chats/${chatId}/participants`);
+    return response.data;
+  },
+
+  // Deletar chat
+  deleteChat: async (chatId) => {
+    const response = await api.delete(`/chats/${chatId}`);
+    return response.data;
+  },
+
+  // Obter contagem de mensagens não lidas
+  getUnreadCount: async (userId) => {
+    const response = await api.get(`/chats/${userId}/unread-count`);
+    return response.data;
+  },
+};
+
+// Serviços de mensagens
+export const messageService = {
+  // Enviar mensagem
+  sendMessage: async (chatId, senderId, content) => {
+    const response = await api.post('/messages/', {
+      chat_id: chatId,
+      sender_id: senderId,
+      content: content
+    });
+    return response.data;
+  },
+
+  // Obter mensagens do chat
+  getMessages: async (chatId, limit = 50, offset = 0) => {
+    const response = await api.get(`/messages/${chatId}?limit=${limit}&offset=${offset}`);
+    return response.data;
+  },
+
+  // Obter mensagens com remetentes
+  getMessagesWithSenders: async (chatId, limit = 50, offset = 0) => {
+    const response = await api.get(`/messages/${chatId}/with-senders?limit=${limit}&offset=${offset}`);
+    return response.data;
+  },
+
+  // Marcar mensagem como lida
+  markMessageRead: async (messageId) => {
+    const response = await api.put(`/messages/${messageId}/read`);
+    return response.data;
+  },
+
+  // Marcar todas as mensagens do chat como lidas
+  markAllMessagesRead: async (chatId, userId) => {
+    const response = await api.put(`/messages/chat/${chatId}/read-all?user_id=${userId}`);
+    return response.data;
+  },
+
+  // Deletar mensagem
+  deleteMessage: async (messageId) => {
+    const response = await api.delete(`/messages/${messageId}`);
+    return response.data;
+  },
+
+  // Obter contagem de mensagens
+  getMessageCount: async (chatId) => {
+    const response = await api.get(`/messages/${chatId}/count`);
+    return response.data;
+  },
+};
+
 export default api;

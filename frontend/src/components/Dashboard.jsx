@@ -4,6 +4,7 @@ import ProfileEdit from './ProfileEdit';
 import DiscoverProfiles from './DiscoverProfiles';
 import AdvancedSearch from './AdvancedSearch';
 import MatchesList from './MatchesList';
+import Chat from './Chat';
 import './Dashboard.css';
 
 // Componentes das seções (placeholder por enquanto)
@@ -50,19 +51,15 @@ const SearchSection = () => (
   </div>
 );
 
-const MatchesSection = () => (
+const MatchesSection = ({ onNavigateToChat }) => (
   <div className="section-content">
-    <MatchesList />
+    <MatchesList onNavigateToChat={onNavigateToChat} />
   </div>
 );
 
 const ChatSection = () => (
   <div className="section-content">
-    <h2>💬 Chat</h2>
-    <p>Converse com seus matches em tempo real.</p>
-    <div className="placeholder-content">
-      <p>🚧 Funcionalidade em desenvolvimento...</p>
-    </div>
+    <Chat />
   </div>
 );
 
@@ -93,6 +90,10 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  const handleNavigateToChat = () => {
+    setActiveSection('chat');
   };
 
   const navigationItems = [
@@ -170,7 +171,7 @@ const Dashboard = () => {
 
         {/* Main Content */}
         <main className="dashboard-main">
-          <ActiveComponent />
+          <ActiveComponent onNavigateToChat={handleNavigateToChat} />
         </main>
       </div>
     </div>

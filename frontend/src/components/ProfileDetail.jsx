@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { profileService, tagsService, matchesService } from '../services/api';
 import './ProfileDetail.css';
 
-const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false }) => {
+const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false, onNavigateToChat }) => {
   // const { user } = useAuth(); // Removido - não usado
   const [profileData, setProfileData] = useState(null);
   const [profileTags, setProfileTags] = useState([]);
@@ -62,8 +62,10 @@ const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false }) => {
   };
 
   const handleStartChat = () => {
-    // TODO: Implementar navegação para o chat
-    alert('Funcionalidade de chat será implementada em breve!');
+    if (onNavigateToChat) {
+      onNavigateToChat();
+      onClose(); // Fechar o modal do perfil
+    }
   };
 
   if (!isOpen || !profile) return null;

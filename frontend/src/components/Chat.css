@@ -1,0 +1,251 @@
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #f8f9fa;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.chat-header h2 {
+  margin: 0 0 5px 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.chat-header p {
+  margin: 0;
+  opacity: 0.95;
+  font-size: 0.9rem;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.chat-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Layout Desktop */
+.chat-sidebar {
+  width: 350px;
+  border-right: 1px solid #e0e0e0;
+  background: white;
+  flex-shrink: 0;
+}
+
+.chat-main {
+  flex: 1;
+  background: white;
+}
+
+/* Layout Mobile */
+@media (max-width: 768px) {
+  .chat-container {
+    height: 100vh;
+    border-radius: 0;
+  }
+  
+  .chat-header {
+    padding: 15px;
+  }
+  
+  .chat-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .chat-content {
+    flex-direction: column;
+  }
+  
+  .chat-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .chat-main {
+    flex: 1;
+  }
+}
+
+/* Transições suaves */
+.chat-content {
+  transition: all 0.3s ease;
+}
+
+/* Estados de loading global */
+.chat-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+}
+
+.chat-loading .loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #2196f3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.chat-loading p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Estados de erro global */
+.chat-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px;
+  text-align: center;
+  color: #666;
+}
+
+.chat-error .error-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.chat-error h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.chat-error p {
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+/* Animações de entrada */
+.chat-container {
+  animation: chatSlideIn 0.3s ease-out;
+}
+
+@keyframes chatSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Indicadores de status */
+.chat-status-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  z-index: 1000;
+  animation: statusSlideIn 0.3s ease-out;
+}
+
+@keyframes statusSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.chat-status-indicator.online {
+  background: rgba(76, 175, 80, 0.9);
+}
+
+.chat-status-indicator.offline {
+  background: rgba(244, 67, 54, 0.9);
+}
+
+/* Botão de voltar (mobile) */
+.chat-back-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px;
+  margin-right: 10px;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.chat-back-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+  .chat-back-btn {
+    display: flex;
+  }
+}
+
+/* Melhorias de acessibilidade */
+.chat-container:focus-within {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+/* Modo escuro (para futuras implementações) */
+.chat-container.dark-theme {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.chat-container.dark-theme .chat-sidebar,
+.chat-container.dark-theme .chat-main {
+  background: #2d2d2d;
+  border-color: #404040;
+}
+
+/* Animações de notificação */
+@keyframes notificationPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.chat-notification {
+  animation: notificationPulse 2s infinite;
+}
