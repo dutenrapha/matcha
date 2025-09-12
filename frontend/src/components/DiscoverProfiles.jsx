@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { profileService, tagsService, swipeService } from '../services/api';
+import SwipeCard from './SwipeCard';
 import './DiscoverProfiles.css';
 
 const DiscoverProfiles = () => {
@@ -13,15 +14,7 @@ const DiscoverProfiles = () => {
   const [swipeFeedback, setSwipeFeedback] = useState('');
   const [isSwiping, setIsSwiping] = useState(false);
 
-  // Carregar perfis sugeridos
-  useEffect(() => {
-    if (user?.user_id) {
-      loadProfiles();
-      loadUserTags();
-    }
-  }, [user?.user_id]);
-
-  const loadProfiles = async () => {
+  const loadProfiles = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -36,16 +29,24 @@ const DiscoverProfiles = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.user_id]);
 
-  const loadUserTags = async () => {
+  const loadUserTags = useCallback(async () => {
     try {
       const tagsData = await tagsService.getUserTags(user.user_id);
       setUserTags(tagsData);
     } catch (err) {
       console.error('Erro ao carregar tags do usuário:', err);
     }
-  };
+  }, [user?.user_id]);
+
+  // Carregar perfis sugeridos
+  useEffect(() => {
+    if (user?.user_id) {
+      loadProfiles();
+      loadUserTags();
+    }
+  }, [user?.user_id, loadProfiles, loadUserTags]);
 
   const handleNextProfile = () => {
     if (currentIndex < profiles.length - 1) {
@@ -89,18 +90,19 @@ const DiscoverProfiles = () => {
         setSwipeFeedback('👎 Dislike enviado!');
       }
 
-      // Avançar para o próximo perfil após um delay
+      // Limpar feedback após um tempo mais curto
       setTimeout(() => {
-        handleNextProfile();
         setSwipeFeedback('');
-      }, 1000);
+        setIsSwiping(false);
+      }, 500);
 
     } catch (err) {
       console.error('Erro ao enviar swipe:', err);
       setSwipeFeedback('❌ Erro ao enviar');
-      setTimeout(() => setSwipeFeedback(''), 2000);
-    } finally {
-      setIsSwiping(false);
+      setTimeout(() => {
+        setSwipeFeedback('');
+        setIsSwiping(false);
+      }, 1000);
     }
   };
 
@@ -165,6 +167,10 @@ const DiscoverProfiles = () => {
             <span className="stat-number">{currentIndex + 1}</span>
             <span className="stat-label">Visualizando</span>
           </div>
+          <div className="stat">
+            <span className="stat-number">{profiles.length - currentIndex - 1}</span>
+            <span className="stat-label">Restantes</span>
+          </div>
         </div>
 
         <div className="progress-bar">
@@ -172,16 +178,34 @@ const DiscoverProfiles = () => {
         </div>
       </div>
 
-      <div className="profile-card-container">
-        <ProfileCard 
-          profile={currentProfile}
-          userTags={userTags}
-          onNext={handleNextProfile}
-          onRefresh={handleRefresh}
-          onSwipe={handleSwipe}
-          isSwiping={isSwiping}
-          swipeFeedback={swipeFeedback}
-        />
+      <div className="swipe-container">
+               {/* Card de fundo (próximo perfil) */}
+               {profiles[currentIndex + 1] && (
+                 <div className="swipe-card-back">
+                   <SwipeCard
+                     key={`back-${profiles[currentIndex + 1].user_id}`}
+                     profile={profiles[currentIndex + 1]}
+                     userTags={userTags}
+                     onNext={handleNextProfile}
+                     onRefresh={handleRefresh}
+                     onSwipe={handleSwipe}
+                     swipeFeedback={swipeFeedback}
+                   />
+                 </div>
+               )}
+
+               {/* Card principal */}
+               {currentProfile && (
+                 <SwipeCard
+                   key={`main-${currentProfile.user_id}`}
+                   profile={currentProfile}
+                   userTags={userTags}
+                   onNext={handleNextProfile}
+                   onRefresh={handleRefresh}
+                   onSwipe={handleSwipe}
+                   swipeFeedback={swipeFeedback}
+                 />
+               )}
       </div>
 
       <div className="discover-actions">
@@ -202,168 +226,5 @@ const DiscoverProfiles = () => {
   );
 };
 
-// Componente do Card de Perfil
-const ProfileCard = ({ profile, userTags, onNext, onRefresh, onSwipe, isSwiping, swipeFeedback }) => {
-  const [profileTags, setProfileTags] = useState([]);
-  const [loadingTags, setLoadingTags] = useState(false);
-
-  useEffect(() => {
-    if (profile?.user_id) {
-      loadProfileTags();
-    }
-  }, [profile?.user_id]);
-
-  const loadProfileTags = async () => {
-    try {
-      setLoadingTags(true);
-      const tagsData = await tagsService.getUserTags(profile.user_id);
-      setProfileTags(tagsData);
-    } catch (err) {
-      console.error('Erro ao carregar tags do perfil:', err);
-    } finally {
-      setLoadingTags(false);
-    }
-  };
-
-  const getCommonTags = () => {
-    if (!userTags.length || !profileTags.length) return [];
-    
-    const userTagNames = userTags.map(tag => tag.name.toLowerCase());
-    return profileTags.filter(tag => 
-      userTagNames.includes(tag.name.toLowerCase())
-    );
-  };
-
-  const formatDistance = (distance) => {
-    if (distance < 1) {
-      return `${Math.round(distance * 1000)}m`;
-    }
-    return `${distance.toFixed(1)}km`;
-  };
-
-  const getAgeSuffix = (age) => {
-    if (age >= 18 && age <= 25) return 's';
-    return '';
-  };
-
-  if (!profile) return null;
-
-  const commonTags = getCommonTags();
-
-  return (
-    <div className="profile-card">
-      <div className="profile-image">
-        {profile.avatar_url ? (
-          <img src={profile.avatar_url} alt={profile.name} />
-        ) : (
-          <div className="no-avatar">
-            <span>📷</span>
-          </div>
-        )}
-        
-        <div className="profile-overlay">
-          <div className="profile-info">
-            <h3>{profile.name}</h3>
-            <p className="profile-age">{profile.age} ano{getAgeSuffix(profile.age)}</p>
-            <p className="profile-distance">📍 {formatDistance(profile.distance)}</p>
-          </div>
-        </div>
-
-        <div className="profile-badges">
-          <div className="fame-badge">
-            ⭐ {profile.fame_rating || 0}
-          </div>
-          {commonTags.length > 0 && (
-            <div className="common-tags-badge">
-              🏷️ {commonTags.length} interesse{commonTags.length > 1 ? 's' : ''} em comum
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="profile-details">
-        {profile.bio && (
-          <div className="profile-bio">
-            <p>"{profile.bio}"</p>
-          </div>
-        )}
-
-        {loadingTags ? (
-          <div className="tags-loading">
-            <small>Carregando interesses...</small>
-          </div>
-        ) : profileTags.length > 0 ? (
-          <div className="profile-tags">
-            <h4>Interesses:</h4>
-            <div className="tags-list">
-              {profileTags.map((tag, index) => {
-                const isCommon = commonTags.some(ct => ct.tag_id === tag.tag_id);
-                return (
-                  <span 
-                    key={tag.tag_id} 
-                    className={`tag ${isCommon ? 'common-tag' : ''}`}
-                  >
-                    #{tag.name}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-        ) : (
-          <div className="no-tags">
-            <small>Nenhum interesse adicionado</small>
-          </div>
-        )}
-
-        {commonTags.length > 0 && (
-          <div className="common-interests">
-            <h4>🎯 Interesses em Comum:</h4>
-            <div className="common-tags-list">
-              {commonTags.map(tag => (
-                <span key={tag.tag_id} className="common-tag">
-                  #{tag.name}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="profile-actions">
-        {swipeFeedback && (
-          <div className="swipe-feedback">
-            {swipeFeedback}
-          </div>
-        )}
-        
-        <div className="swipe-buttons">
-          <button 
-            className="btn btn-dislike"
-            onClick={() => onSwipe('dislike')}
-            disabled={isSwiping}
-          >
-            👎 Passar
-          </button>
-          
-          <button 
-            className="btn btn-skip"
-            onClick={onNext}
-            disabled={isSwiping}
-          >
-            ⏭️ Pular
-          </button>
-          
-          <button 
-            className="btn btn-like"
-            onClick={() => onSwipe('like')}
-            disabled={isSwiping}
-          >
-            ❤️ Curtir
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default DiscoverProfiles;
