@@ -26,10 +26,10 @@ async def add_swipe(swipe: SwipeIn, conn=Depends(get_connection)):
         """, swipe.swiped_id, swipe.swiper_id)
         
         if reciprocal:
-            # Criar match se ainda não existir
+            # Criar match se ainda não existir (usando LEAST/GREATEST para evitar duplicatas)
             match = await conn.fetchrow("""
                 INSERT INTO matches (user1_id, user2_id)
-                VALUES ($1, $2)
+                VALUES (LEAST($1, $2), GREATEST($1, $2))
                 ON CONFLICT (user1_id, user2_id) DO NOTHING
                 RETURNING match_id
             """, swipe.swiper_id, swipe.swiped_id)
@@ -41,13 +41,17 @@ async def add_swipe(swipe: SwipeIn, conn=Depends(get_connection)):
                     VALUES ($1)
                 """, match["match_id"])
                 
+                # Buscar nomes dos usuários para notificações mais amigáveis
+                user1 = await conn.fetchrow("SELECT name FROM users WHERE user_id = $1", swipe.swiper_id)
+                user2 = await conn.fetchrow("SELECT name FROM users WHERE user_id = $1", swipe.swiped_id)
+                
                 # Criar notificações para ambos os usuários
-                content1 = f"You matched with user {swipe.swiped_id}!"
-                content2 = f"You matched with user {swipe.swiper_id}!"
+                content1 = f"Você tem um novo match com {user2['name'] if user2 else 'alguém'}! 💕"
+                content2 = f"Você tem um novo match com {user1['name'] if user1 else 'alguém'}! 💕"
                 
                 # Salvar notificações no banco
-                # await save_notification(conn, swipe.swiper_id, "match", content1)
-                # await save_notification(conn, swipe.swiped_id, "match", content2)
+                await save_notification(conn, swipe.swiper_id, "match", content1)
+                await save_notification(conn, swipe.swiped_id, "match", content2)
                 
                 # Enviar notificações em tempo real
                 notif1 = {
@@ -68,9 +72,12 @@ async def add_swipe(swipe: SwipeIn, conn=Depends(get_connection)):
                 
                 return {"message": "Match created!", "match_id": match["match_id"]}
         
+        # Buscar nome do usuário que deu like
+        liker = await conn.fetchrow("SELECT name FROM users WHERE user_id = $1", swipe.swiper_id)
+        
         # Se não há match, criar notificação de like
-        content = f"Someone liked your profile!"
-        # await save_notification(conn, swipe.swiped_id, "like", content)
+        content = f"{liker['name'] if liker else 'Alguém'} curtiu seu perfil! ❤️"
+        await save_notification(conn, swipe.swiped_id, "like", content)
         
         notif = {
             "user_id": swipe.swiped_id,

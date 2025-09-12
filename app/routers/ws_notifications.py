@@ -27,11 +27,14 @@ async def push_notification(user_id: int, message: dict):
 
 @router.websocket("/notifications/{user_id}")
 async def notifications_socket(websocket: WebSocket, user_id: int, conn=Depends(get_connection)):
+    print(f"[INFO] Tentando conectar WebSocket de notificações para usuário {user_id}")
     await websocket.accept()
+    print(f"[INFO] WebSocket de notificações conectado para usuário {user_id}")
 
     if user_id not in active_notifications:
         active_notifications[user_id] = []
     active_notifications[user_id].append(websocket)
+    print(f"[INFO] Usuário {user_id} adicionado às conexões ativas. Total: {len(active_notifications[user_id])}")
 
     try:
         while True:

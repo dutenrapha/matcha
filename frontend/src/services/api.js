@@ -365,4 +365,59 @@ export const messageService = {
   },
 };
 
+// Serviços de notificações
+export const notificationService = {
+  // Obter notificações do usuário
+  getNotifications: async (userId, limit = 20, offset = 0) => {
+    const response = await api.get(`/notifications/${userId}?limit=${limit}&offset=${offset}`);
+    return response.data;
+  },
+
+  // Obter notificações não lidas
+  getUnreadNotifications: async (userId) => {
+    const response = await api.get(`/notifications/${userId}/unread`);
+    return response.data;
+  },
+
+  // Obter contagem de notificações não lidas
+  getUnreadCount: async (userId) => {
+    const response = await api.get(`/notifications/${userId}/count`);
+    return response.data;
+  },
+
+  // Marcar notificação como lida
+  markAsRead: async (notificationId) => {
+    const response = await api.put(`/notifications/${notificationId}/read`);
+    return response.data;
+  },
+
+  // Marcar todas as notificações como lidas
+  markAllAsRead: async (userId) => {
+    const response = await api.put(`/notifications/${userId}/read-all`);
+    return response.data;
+  },
+
+  // Criar notificação
+  createNotification: async (userId, type, content) => {
+    const response = await api.post('/notifications/', {
+      user_id: userId,
+      type: type,
+      content: content
+    });
+    return response.data;
+  },
+
+  // Deletar notificação
+  deleteNotification: async (notificationId) => {
+    const response = await api.delete(`/notifications/${notificationId}`);
+    return response.data;
+  },
+
+  // Deletar todas as notificações
+  deleteAllNotifications: async (userId) => {
+    const response = await api.delete(`/notifications/${userId}/all`);
+    return response.data;
+  },
+};
+
 export default api;

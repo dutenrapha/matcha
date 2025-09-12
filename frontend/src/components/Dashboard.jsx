@@ -5,6 +5,8 @@ import DiscoverProfiles from './DiscoverProfiles';
 import AdvancedSearch from './AdvancedSearch';
 import MatchesList from './MatchesList';
 import Chat from './Chat';
+import NotificationsList from './NotificationsList';
+import NotificationIndicator from './NotificationIndicator';
 import './Dashboard.css';
 
 // Componentes das seções (placeholder por enquanto)
@@ -65,11 +67,7 @@ const ChatSection = () => (
 
 const NotificationsSection = () => (
   <div className="section-content">
-    <h2>🔔 Notificações</h2>
-    <p>Veja suas notificações e atividade recente.</p>
-    <div className="placeholder-content">
-      <p>🚧 Funcionalidade em desenvolvimento...</p>
-    </div>
+    <NotificationsList />
   </div>
 );
 
@@ -125,10 +123,10 @@ const Dashboard = () => {
         </div>
         
         <div className="header-right">
-          <div className="notifications-icon">
-            🔔
-            <span className="notification-badge">0</span>
-          </div>
+          <NotificationIndicator 
+            userId={user?.user_id}
+            onClick={() => setActiveSection('notifications')}
+          />
           <div className="user-menu">
             <div className="user-avatar-small">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}

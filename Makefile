@@ -47,7 +47,7 @@ test:
 # Popular DB com 500 usuários fake
 populate:
 	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/populate.py
-
+	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/create_matches.py
 # Resetar ambiente: limpar DB, recriar, aplicar migrations e popular
 reset:
 	$(DOCKER_COMPOSE) down -v
