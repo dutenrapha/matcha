@@ -100,6 +100,89 @@ export const userService = {
     const response = await api.get(`/users/${userId}`);
     return response.data;
   },
+
+  // Atualizar usuário
+  updateUser: async (userId, userData) => {
+    const response = await api.put(`/users/${userId}`, userData);
+    return response.data;
+  },
+};
+
+// Serviços de perfil
+export const profileService = {
+  // Criar ou atualizar perfil
+  createOrUpdateProfile: async (profileData) => {
+    const response = await api.post('/profiles/', profileData);
+    return response.data;
+  },
+
+  // Obter perfil por user_id
+  getProfile: async (userId) => {
+    const response = await api.get(`/profiles/${userId}`);
+    return response.data;
+  },
+
+  // Atualizar perfil
+  updateProfile: async (userId, profileData) => {
+    const response = await api.put(`/profiles/${userId}`, profileData);
+    return response.data;
+  },
+
+  // Descobrir perfis
+  discoverProfiles: async (userId, limit = 10) => {
+    const response = await api.get(`/profiles/discover/${userId}?limit=${limit}`);
+    return response.data;
+  },
+};
+
+// Serviços de preferências
+export const preferencesService = {
+  // Criar ou atualizar preferências
+  createOrUpdatePreferences: async (preferencesData) => {
+    const response = await api.post('/preferences/', preferencesData);
+    return response.data;
+  },
+
+  // Obter preferências
+  getPreferences: async (userId) => {
+    const response = await api.get(`/preferences/${userId}`);
+    return response.data;
+  },
+};
+
+// Serviços de tags
+export const tagsService = {
+  // Obter todas as tags
+  getAllTags: async () => {
+    const response = await api.get('/tags/');
+    return response.data;
+  },
+
+  // Criar nova tag
+  createTag: async (tagData) => {
+    const response = await api.post('/tags/', tagData);
+    return response.data;
+  },
+
+  // Obter tags do usuário
+  getUserTags: async (userId) => {
+    const response = await api.get(`/tags/user/${userId}`);
+    return response.data.tags || [];
+  },
+
+  // Atribuir tag ao usuário
+  assignTag: async (userId, tagId) => {
+    const response = await api.post('/tags/assign', { user_id: userId, tag_id: tagId });
+    return response.data;
+  },
+
+  // Remover tag do usuário
+  removeTag: async (userId, tagId) => {
+    const response = await api.delete('/tags/unassign', { 
+      data: { user_id: userId, tag_id: tagId } 
+    });
+    return response.data;
+  },
 };
 
 export default api;

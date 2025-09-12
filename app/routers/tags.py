@@ -4,12 +4,12 @@ from app.schemas.tags import TagCreate, TagOut, UserTagAssign, UserTagRemove, Us
 
 router = APIRouter(prefix="/tags", tags=["tags"])
 
-@router.post("/", response_model=dict)
+@router.post("/", response_model=TagOut)
 async def create_tag(tag: TagCreate, conn=Depends(get_connection)):
     """Criar nova tag"""
     try:
-        await conn.execute("INSERT INTO tags (name) VALUES ($1)", tag.name)
-        return {"message": "Tag created successfully"}
+        result = await conn.fetchrow("INSERT INTO tags (name) VALUES ($1) RETURNING tag_id, name", tag.name)
+        return dict(result)
     except Exception:
         raise HTTPException(status_code=400, detail="Tag already exists")
 
