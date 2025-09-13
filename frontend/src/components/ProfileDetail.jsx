@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { profileService, tagsService, matchesService, blockService } from '../services/api';
+import ReportUserModal from './ReportUserModal';
 import './ProfileDetail.css';
 
 const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false, onNavigateToChat, currentUserId }) => {
@@ -11,6 +12,7 @@ const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false, onNavigateTo
   const [isUnmatching, setIsUnmatching] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
   const [blockStatus, setBlockStatus] = useState(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const loadProfileDetails = useCallback(async () => {
     if (!profile?.user_id || !currentUserId) return;
@@ -285,6 +287,16 @@ const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false, onNavigateTo
                 </button>
               )}
               
+              {/* Botão de reportar - sempre visível (exceto se for o próprio usuário) */}
+              {currentUserId && profile?.user_id && currentUserId !== profile.user_id && (
+                <button 
+                  className="action-btn report-btn"
+                  onClick={() => setIsReportModalOpen(true)}
+                >
+                  📝 Reportar Usuário
+                </button>
+              )}
+              
               {/* Indicador se usuário está bloqueado */}
               {blockStatus && blockStatus.any_block && (
                 <div className="block-status">
@@ -299,6 +311,14 @@ const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false, onNavigateTo
           </div>
         )}
       </div>
+      
+      {/* Modal de Reporte */}
+      <ReportUserModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        userToReport={displayProfile}
+        currentUserId={currentUserId}
+      />
     </div>
   );
 };

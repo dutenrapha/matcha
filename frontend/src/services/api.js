@@ -468,4 +468,53 @@ export const blockService = {
   },
 };
 
+// Serviços de reports
+export const reportService = {
+  // Reportar usuário
+  reportUser: async (reporterId, reportedId, reason) => {
+    const response = await api.post('/reports/', {
+      reporter_id: reporterId,
+      reported_id: reportedId,
+      reason: reason
+    });
+    return response.data;
+  },
+
+  // Obter reports feitos pelo usuário
+  getReportsMade: async (userId) => {
+    const response = await api.get(`/reports/${userId}/made`);
+    return response.data;
+  },
+
+  // Obter reports recebidos pelo usuário
+  getReportsReceived: async (userId) => {
+    const response = await api.get(`/reports/${userId}/received`);
+    return response.data;
+  },
+
+  // Obter contagem de reports
+  getReportCount: async (userId) => {
+    const response = await api.get(`/reports/${userId}/count`);
+    return response.data;
+  },
+
+  // Deletar report
+  deleteReport: async (reportId) => {
+    const response = await api.delete(`/reports/${reportId}`);
+    return response.data;
+  },
+
+  // Obter todos os reports (admin)
+  getAllReports: async (limit = 50, offset = 0) => {
+    const response = await api.get(`/reports/admin/all?limit=${limit}&offset=${offset}`);
+    return response.data;
+  },
+
+  // Obter estatísticas de reports (admin)
+  getReportStats: async () => {
+    const response = await api.get('/reports/admin/stats');
+    return response.data;
+  },
+};
+
 export default api;

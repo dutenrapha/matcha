@@ -8,6 +8,7 @@ import Chat from './Chat';
 import NotificationsList from './NotificationsList';
 import NotificationIndicator from './NotificationIndicator';
 import BlockedUsers from './BlockedUsers';
+import ReportsList from './ReportsList';
 import './Dashboard.css';
 
 // Componentes das seções (placeholder por enquanto)
@@ -78,6 +79,12 @@ const BlockedUsersSection = () => (
   </div>
 );
 
+const ReportsSection = () => (
+  <div className="section-content">
+    <ReportsList />
+  </div>
+);
+
 const SettingsSection = () => (
   <div className="section-content">
     <h2>⚙️ Configurações</h2>
@@ -110,6 +117,7 @@ const Dashboard = () => {
     { id: 'chat', label: 'Chat', icon: '💬', component: ChatSection },
     { id: 'notifications', label: 'Notificações', icon: '🔔', component: NotificationsSection },
     { id: 'blocked', label: 'Bloqueados', icon: '🚫', component: BlockedUsersSection },
+    { id: 'reports', label: 'Reports', icon: '📝', component: ReportsSection },
     { id: 'settings', label: 'Configurações', icon: '⚙️', component: SettingsSection },
   ];
 
