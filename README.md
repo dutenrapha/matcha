@@ -210,6 +210,42 @@ make reset          # Limpa tudo e recria do zero
 make clean          # Limpar cache e arquivos temporários
 make down && make up # Reiniciar containers
 make logs           # Ver logs de todos os serviços
+make fix-frontend   # Corrigir problemas do frontend
+make populate-safe  # Popular banco (versão segura)
+```
+
+## 🚨 Solução de Problemas
+
+### Erro no `make populate`
+Se você receber erro de "duplicate key value violates unique constraint":
+
+```bash
+# Opção 1: Reset completo
+make reset
+
+# Opção 2: População segura
+make populate-safe
+```
+
+### Erro no Frontend (localhost:3000)
+Se você receber erro de "html-webpack-plugin":
+
+```bash
+# Corrigir problemas do frontend
+make fix-frontend
+
+# Ou reinstalar dependências
+make install-frontend
+```
+
+### Problemas Gerais
+```bash
+# Limpar tudo e recomeçar
+make clean
+make setup
+make up
+make migrate
+make populate-safe
 ```
 
 ## 🔗 Endpoints Principais

@@ -29,6 +29,7 @@ install-backend:
 # Instalar dependências do frontend
 install-frontend:
 	@echo "📦 Instalando dependências do frontend..."
+	cd frontend && rm -rf node_modules package-lock.json
 	cd frontend && $(NPM) install
 	@echo "✅ Dependências do frontend instaladas!"
 
@@ -107,6 +108,28 @@ reset:
 	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/populate.py
 	@echo "✅ Ambiente resetado com sucesso!"
 
+# Popular banco com dados de teste (versão segura)
+populate-safe:
+	@echo "👥 Populando banco com dados de teste (versão segura)..."
+	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python -c "
+import asyncio
+import asyncpg
+import sys
+import os
+sys.path.append('/app')
+from scripts.populate import populate_users
+
+async def safe_populate():
+    try:
+        await populate_users(100)  # Menos usuários para evitar conflitos
+        print('✅ População segura concluída!')
+    except Exception as e:
+        print(f'⚠️  Erro na população: {e}')
+        print('💡 Tente: make reset (para limpar e recriar)')
+
+asyncio.run(safe_populate())
+"
+
 # Acessar banco
 psql:
 	@echo "🗄️  Conectando ao banco PostgreSQL..."
@@ -125,6 +148,14 @@ run-backend:
 run-frontend:
 	@echo "⚛️  Iniciando frontend localmente..."
 	cd frontend && $(NPM) start
+
+# Corrigir problemas do frontend
+fix-frontend:
+	@echo "🔧 Corrigindo problemas do frontend..."
+	cd frontend && rm -rf node_modules package-lock.json
+	cd frontend && $(NPM) cache clean --force
+	cd frontend && $(NPM) install
+	@echo "✅ Frontend corrigido!"
 
 # Executar ambos localmente (em paralelo)
 run-local: run-backend run-frontend
@@ -206,6 +237,7 @@ help:
 	@echo "🗄️  BANCO DE DADOS:"
 	@echo "  make migrate         - Aplicar migrations"
 	@echo "  make populate        - Popular banco com dados de teste"
+	@echo "  make populate-safe   - Popular banco (versão segura)"
 	@echo "  make reset           - Reset completo do ambiente"
 	@echo "  make psql            - Acessar banco PostgreSQL"
 	@echo ""
@@ -226,6 +258,7 @@ help:
 	@echo ""
 	@echo "🔧 UTILITÁRIOS:"
 	@echo "  make clean           - Limpar cache e arquivos temporários"
+	@echo "  make fix-frontend    - Corrigir problemas do frontend"
 	@echo "  make status          - Status dos containers"
 	@echo "  make help            - Mostrar esta ajuda"
 
