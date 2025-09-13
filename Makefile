@@ -95,7 +95,6 @@ migration:
 populate:
 	@echo "👥 Populando banco com dados de teste..."
 	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/populate.py
-	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/create_matches.py
 	@echo "✅ Banco populado com sucesso!"
 
 # Resetar ambiente: limpar DB, recriar, aplicar migrations e popular
