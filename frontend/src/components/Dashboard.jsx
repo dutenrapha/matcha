@@ -7,6 +7,7 @@ import MatchesList from './MatchesList';
 import Chat from './Chat';
 import NotificationsList from './NotificationsList';
 import NotificationIndicator from './NotificationIndicator';
+import BlockedUsers from './BlockedUsers';
 import './Dashboard.css';
 
 // Componentes das seções (placeholder por enquanto)
@@ -71,6 +72,12 @@ const NotificationsSection = () => (
   </div>
 );
 
+const BlockedUsersSection = () => (
+  <div className="section-content">
+    <BlockedUsers />
+  </div>
+);
+
 const SettingsSection = () => (
   <div className="section-content">
     <h2>⚙️ Configurações</h2>
@@ -102,6 +109,7 @@ const Dashboard = () => {
     { id: 'matches', label: 'Matches', icon: '💕', component: MatchesSection },
     { id: 'chat', label: 'Chat', icon: '💬', component: ChatSection },
     { id: 'notifications', label: 'Notificações', icon: '🔔', component: NotificationsSection },
+    { id: 'blocked', label: 'Bloqueados', icon: '🚫', component: BlockedUsersSection },
     { id: 'settings', label: 'Configurações', icon: '⚙️', component: SettingsSection },
   ];
 

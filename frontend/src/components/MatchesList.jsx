@@ -153,6 +153,7 @@ const MatchesList = ({ onNavigateToChat }) => {
         onClose={handleCloseProfileDetail}
         isMatch={true}
         onNavigateToChat={onNavigateToChat}
+        currentUserId={user?.user_id}
       />
     </div>
   );

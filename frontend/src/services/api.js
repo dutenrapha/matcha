@@ -420,4 +420,52 @@ export const notificationService = {
   },
 };
 
+// Serviços de bloqueios
+export const blockService = {
+  // Bloquear usuário
+  blockUser: async (blockerId, blockedId) => {
+    const response = await api.post('/blocks/', {
+      blocker_id: blockerId,
+      blocked_id: blockedId
+    });
+    return response.data;
+  },
+
+  // Desbloquear usuário por IDs
+  unblockUser: async (blockerId, blockedId) => {
+    const response = await api.delete(`/blocks/user/${blockerId}/${blockedId}`);
+    return response.data;
+  },
+
+  // Desbloquear usuário por block_id
+  unblockUserById: async (blockId) => {
+    const response = await api.delete(`/blocks/${blockId}`);
+    return response.data;
+  },
+
+  // Obter usuários bloqueados pelo usuário
+  getBlockedUsers: async (userId) => {
+    const response = await api.get(`/blocks/${userId}/blocked`);
+    return response.data;
+  },
+
+  // Obter usuários que bloquearam o usuário
+  getUsersWhoBlocked: async (userId) => {
+    const response = await api.get(`/blocks/${userId}/blocked-by`);
+    return response.data;
+  },
+
+  // Verificar status de bloqueio entre dois usuários
+  checkBlockStatus: async (user1Id, user2Id) => {
+    const response = await api.get(`/blocks/check/${user1Id}/${user2Id}`);
+    return response.data;
+  },
+
+  // Obter contagem de bloqueios
+  getBlockCount: async (userId) => {
+    const response = await api.get(`/blocks/${userId}/count`);
+    return response.data;
+  },
+};
+
 export default api;

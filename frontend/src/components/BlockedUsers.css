@@ -1,0 +1,273 @@
+/* Blocked Users Styles */
+.blocked-users {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Header */
+.blocked-users-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.blocked-users-header h2 {
+  margin: 0 0 10px 0;
+  color: #1f2937;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.blocked-users-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 1.1rem;
+}
+
+/* Loading and Error States */
+.loading-container,
+.error-container {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #6b46c1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  background: #6b46c1;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 15px;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.retry-btn:hover {
+  background: #553c9a;
+}
+
+/* No Blocked Users */
+.no-blocked-users {
+  text-align: center;
+  padding: 60px 20px;
+  background: #f9fafb;
+  border-radius: 16px;
+  border: 2px solid #e5e7eb;
+}
+
+.no-blocked-users-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.no-blocked-users h3 {
+  margin: 0 0 15px 0;
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.no-blocked-users p {
+  margin: 0 0 30px 0;
+  color: #6b7280;
+  font-size: 1.1rem;
+}
+
+.no-blocked-users-info {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.no-blocked-users-info h4 {
+  margin: 0 0 15px 0;
+  color: #374151;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.no-blocked-users-info ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.no-blocked-users-info li {
+  margin-bottom: 8px;
+}
+
+/* Blocked Users List */
+.blocked-users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.blocked-user-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.blocked-user-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: #d1d5db;
+}
+
+.blocked-user-avatar {
+  flex-shrink: 0;
+}
+
+.blocked-user-avatar img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #dc2626;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2);
+}
+
+.blocked-user-info {
+  flex: 1;
+}
+
+.blocked-user-info h3 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.blocked-date {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.blocked-user-actions {
+  flex-shrink: 0;
+}
+
+.unblock-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unblock-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+}
+
+.unblock-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .blocked-users {
+    padding: 15px;
+  }
+
+  .blocked-users-header h2 {
+    font-size: 1.7rem;
+  }
+
+  .blocked-user-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+    padding: 20px 15px;
+  }
+
+  .blocked-user-avatar img {
+    width: 70px;
+    height: 70px;
+  }
+
+  .blocked-user-info {
+    text-align: center;
+  }
+
+  .blocked-user-info h3 {
+    font-size: 1.2rem;
+  }
+
+  .unblock-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .no-blocked-users-info {
+    padding: 20px 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .blocked-users-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .blocked-users-header p {
+    font-size: 1rem;
+  }
+
+  .blocked-user-avatar img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .blocked-user-info h3 {
+    font-size: 1.1rem;
+  }
+
+  .blocked-date {
+    font-size: 0.9rem;
+  }
+
+  .unblock-btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+}

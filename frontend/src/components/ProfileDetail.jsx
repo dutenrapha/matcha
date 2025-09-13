@@ -1,37 +1,41 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { profileService, tagsService, matchesService } from '../services/api';
+import { profileService, tagsService, matchesService, blockService } from '../services/api';
 import './ProfileDetail.css';
 
-const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false, onNavigateToChat }) => {
+const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false, onNavigateToChat, currentUserId }) => {
   // const { user } = useAuth(); // Removido - não usado
   const [profileData, setProfileData] = useState(null);
   const [profileTags, setProfileTags] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isUnmatching, setIsUnmatching] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
+  const [blockStatus, setBlockStatus] = useState(null);
 
   const loadProfileDetails = useCallback(async () => {
-    if (!profile?.user_id) return;
+    if (!profile?.user_id || !currentUserId) return;
 
     try {
       setLoading(true);
       setError('');
 
-      // Carregar dados completos do perfil
-      const [profileDetails, tags] = await Promise.all([
+      // Carregar dados completos do perfil e status de bloqueio
+      const [profileDetails, tags, blockStatusData] = await Promise.all([
         profileService.getProfile(profile.user_id),
-        tagsService.getUserTags(profile.user_id)
+        tagsService.getUserTags(profile.user_id),
+        blockService.checkBlockStatus(currentUserId, profile.user_id)
       ]);
 
       setProfileData(profileDetails);
       setProfileTags(tags);
+      setBlockStatus(blockStatusData);
     } catch (err) {
       console.error('Erro ao carregar detalhes do perfil:', err);
       setError('Erro ao carregar perfil');
     } finally {
       setLoading(false);
     }
-  }, [profile?.user_id]);
+  }, [profile?.user_id, currentUserId]);
 
   useEffect(() => {
     if (isOpen && profile) {
@@ -65,6 +69,37 @@ const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false, onNavigateTo
     if (onNavigateToChat) {
       onNavigateToChat();
       onClose(); // Fechar o modal do perfil
+    }
+  };
+
+  const handleBlockUser = async () => {
+    if (!currentUserId || !profile?.user_id) return;
+    
+    const confirmMessage = `Tem certeza que deseja bloquear ${profile.name || 'este usuário'}?\n\nIsso irá:\n• Remover o match (se existir)\n• Impedir que vocês se vejam nas buscas\n• Desabilitar o chat entre vocês`;
+    
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      setIsBlocking(true);
+      await blockService.blockUser(currentUserId, profile.user_id);
+      
+      // Atualizar status de bloqueio
+      setBlockStatus(prev => ({
+        ...prev,
+        user1_blocked_user2: true,
+        any_block: true
+      }));
+      
+      // Fechar modal e mostrar feedback
+      onClose();
+      alert('Usuário bloqueado com sucesso!');
+    } catch (err) {
+      console.error('Erro ao bloquear usuário:', err);
+      alert('Erro ao bloquear usuário. Tente novamente.');
+    } finally {
+      setIsBlocking(false);
     }
   };
 
@@ -236,6 +271,29 @@ const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false, onNavigateTo
                 >
                   ✕ Fechar
                 </button>
+              )}
+              
+              {/* Botão de bloquear - sempre visível (exceto se já bloqueado) */}
+              {currentUserId && profile?.user_id && currentUserId !== profile.user_id && 
+               blockStatus && !blockStatus.user1_blocked_user2 && (
+                <button 
+                  className="action-btn block-btn"
+                  onClick={handleBlockUser}
+                  disabled={isBlocking}
+                >
+                  {isBlocking ? '⏳ Bloqueando...' : '🚫 Bloquear Usuário'}
+                </button>
+              )}
+              
+              {/* Indicador se usuário está bloqueado */}
+              {blockStatus && blockStatus.any_block && (
+                <div className="block-status">
+                  {blockStatus.user1_blocked_user2 ? (
+                    <span className="blocked-indicator">🚫 Você bloqueou este usuário</span>
+                  ) : blockStatus.user2_blocked_user1 ? (
+                    <span className="blocked-indicator">🚫 Este usuário te bloqueou</span>
+                  ) : null}
+                </div>
               )}
             </div>
           </div>
