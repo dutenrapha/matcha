@@ -23,90 +23,193 @@ Uma API completa para aplicação de encontros estilo Tinder, desenvolvida com F
 
 ## 🛠️ Instalação
 
-### Opção 1: Docker (Recomendado)
+### 🚀 Instalação Rápida (Recomendado)
 
-1. Clone o repositório:
+1. **Clone o repositório:**
 ```bash
 git clone <repository-url>
-cd matcha-clone-backend
+cd matcha4
 ```
 
-2. Configure as variáveis de ambiente:
+2. **Setup completo automático:**
 ```bash
-cp env.example .env
-# Edite o .env conforme necessário
+make setup
 ```
 
-3. Suba os containers:
+3. **Subir containers e configurar banco:**
 ```bash
 make up
-```
-
-4. Aplique as migrations:
-```bash
 make migrate
-```
-
-5. Popule o banco com dados de teste:
-```bash
 make populate
 ```
 
-### Opção 2: Instalação Local
+**Pronto!** 🎉 O projeto estará rodando em:
+- **API**: http://localhost:8000
+- **Documentação**: http://localhost:8000/docs
+- **Frontend**: http://localhost:3000 (se executado localmente)
+- **Mailhog**: http://localhost:8025
 
-1. Instale as dependências:
+### 🐳 Instalação com Docker (Completa)
+
+1. **Clone e configure:**
 ```bash
-pip install -r requirements.txt
+git clone <repository-url>
+cd matcha4
+make setup
 ```
 
-2. Configure o PostgreSQL e crie o banco `tinder_clone`
-
-3. Configure as variáveis de ambiente no arquivo `.env`
-
-4. Aplique as migrations:
+2. **Execute o projeto:**
 ```bash
-alembic upgrade head
+make up          # Subir containers
+make migrate     # Aplicar migrations
+make populate    # Popular banco com dados de teste
 ```
 
-5. Popule o banco:
+### 🏃 Instalação Local (Desenvolvimento)
+
+1. **Setup das dependências:**
 ```bash
-python scripts/populate.py
+make install-backend   # Instalar dependências Python
+make install-frontend  # Instalar dependências Node.js
+make setup-env         # Configurar arquivo .env
 ```
 
-6. Execute a API:
+2. **Configure o PostgreSQL:**
+   - Instale PostgreSQL 15+
+   - Crie o banco `tinder_clone`
+   - Configure as credenciais no arquivo `.env`
+
+3. **Execute localmente:**
 ```bash
-uvicorn app.main:app --reload
+make run-backend   # Backend na porta 8000
+make run-frontend  # Frontend na porta 3000
 ```
 
-## 📚 Comandos Úteis
+### 🔄 Reset Completo
 
+Para resetar completamente o ambiente:
 ```bash
-# Subir containers
-make up
-
-# Derrubar containers
-make down
-
-# Rebuild completo
-make build
-
-# Aplicar migrations
-make migrate
-
-# Rodar testes
-make test
-
-# Popular banco com 500 usuários
-make populate
-
-# Reset completo (limpar + recriar + popular)
 make reset
+```
 
-# Ver logs da API
-make logs-api
+## 📚 Comandos Make Disponíveis
 
-# Acessar banco PostgreSQL
-make psql
+### 🚀 Comandos Principais
+```bash
+make setup           # Setup completo do projeto (primeira vez)
+make up              # Subir containers
+make migrate         # Aplicar migrations
+make populate        # Popular banco com dados de teste
+make reset           # Reset completo do ambiente
+```
+
+### 🐳 Docker
+```bash
+make up              # Subir containers
+make down            # Parar containers
+make build           # Rebuild containers
+make dev             # Modo desenvolvimento (com logs)
+make status          # Status dos containers
+```
+
+### 🗄️ Banco de Dados
+```bash
+make migrate         # Aplicar migrations
+make populate        # Popular banco com dados de teste
+make reset           # Reset completo (limpar + recriar + popular)
+make psql            # Acessar banco PostgreSQL
+make migration name="nome"  # Criar nova migration
+```
+
+### 🏃 Desenvolvimento Local
+```bash
+make run-backend     # Executar backend localmente
+make run-frontend    # Executar frontend localmente
+make run-local       # Executar ambos localmente
+```
+
+### 🧪 Testes
+```bash
+make test            # Executar testes
+make test-coverage   # Testes com coverage
+```
+
+### 📋 Logs e Monitoramento
+```bash
+make logs            # Logs de todos os serviços
+make logs-api        # Logs da API
+make logs-db         # Logs do banco
+make logs-frontend   # Logs do frontend
+```
+
+### 🔧 Utilitários
+```bash
+make clean           # Limpar cache e arquivos temporários
+make help            # Mostrar ajuda completa
+make install-backend # Instalar dependências do backend
+make install-frontend# Instalar dependências do frontend
+make setup-env       # Configurar arquivo .env
+```
+
+### 📖 Ajuda
+```bash
+make help            # Mostrar todos os comandos disponíveis
+```
+
+> 📚 **Guia Completo do Makefile**: Consulte o arquivo [MAKEFILE_GUIDE.md](MAKEFILE_GUIDE.md) para instruções detalhadas sobre todos os comandos disponíveis.
+
+## 🎯 Fluxo de Instalação Recomendado
+
+### Para Novos Desenvolvedores
+
+1. **Clone e setup inicial:**
+```bash
+git clone <repository-url>
+cd matcha4
+make setup
+```
+
+2. **Execute o projeto:**
+```bash
+make up
+make migrate
+make populate
+```
+
+3. **Acesse a aplicação:**
+- API: http://localhost:8000
+- Docs: http://localhost:8000/docs
+- Mailhog: http://localhost:8025
+
+### Para Desenvolvimento Local
+
+1. **Setup das dependências:**
+```bash
+make install-backend
+make install-frontend
+make setup-env
+```
+
+2. **Configure PostgreSQL localmente**
+
+3. **Execute em modo desenvolvimento:**
+```bash
+make run-backend    # Terminal 1
+make run-frontend   # Terminal 2
+```
+
+### Para Reset Completo
+
+```bash
+make reset          # Limpa tudo e recria do zero
+```
+
+### Comandos de Emergência
+
+```bash
+make clean          # Limpar cache e arquivos temporários
+make down && make up # Reiniciar containers
+make logs           # Ver logs de todos os serviços
 ```
 
 ## 🔗 Endpoints Principais

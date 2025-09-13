@@ -3,62 +3,231 @@ DOCKER_COMPOSE = docker-compose
 API_SERVICE = api
 DB_SERVICE = db
 FRONTEND_SERVICE = frontend
+PYTHON = python3
+NODE = node
+NPM = npm
+
+# =============================================================================
+# SETUP INICIAL - Instalação completa do projeto
+# =============================================================================
+
+# Setup completo: instalar dependências e configurar ambiente
+setup: install-backend install-frontend setup-env
+	@echo "✅ Setup completo realizado com sucesso!"
+	@echo "📋 Próximos passos:"
+	@echo "   1. make up      - Subir containers"
+	@echo "   2. make migrate - Aplicar migrations"
+	@echo "   3. make populate - Popular banco com dados de teste"
+
+# Instalar dependências do backend
+install-backend:
+	@echo "🐍 Instalando dependências do backend..."
+	$(PYTHON) -m pip install --upgrade pip
+	$(PYTHON) -m pip install -r requirements.txt
+	@echo "✅ Dependências do backend instaladas!"
+
+# Instalar dependências do frontend
+install-frontend:
+	@echo "📦 Instalando dependências do frontend..."
+	cd frontend && $(NPM) install
+	@echo "✅ Dependências do frontend instaladas!"
+
+# Configurar arquivo de ambiente
+setup-env:
+	@echo "⚙️  Configurando arquivo de ambiente..."
+	@if [ ! -f .env ]; then \
+		cp env.example .env; \
+		echo "📝 Arquivo .env criado a partir do env.example"; \
+		echo "⚠️  Edite o arquivo .env conforme necessário"; \
+	else \
+		echo "✅ Arquivo .env já existe"; \
+	fi
+
+# =============================================================================
+# DOCKER - Gerenciamento de containers
+# =============================================================================
 
 # Subir containers
 up:
+	@echo "🚀 Subindo containers..."
 	$(DOCKER_COMPOSE) up -d
+	@echo "✅ Containers iniciados!"
+	@echo "🌐 API: http://localhost:8000"
+	@echo "📚 Docs: http://localhost:8000/docs"
+	@echo "📧 Mailhog: http://localhost:8025"
 
 # Derrubar containers
 down:
+	@echo "🛑 Parando containers..."
 	$(DOCKER_COMPOSE) down
+	@echo "✅ Containers parados!"
 
 # Rebuild total
 build:
+	@echo "🔨 Rebuild completo dos containers..."
 	$(DOCKER_COMPOSE) up --build -d
+	@echo "✅ Containers rebuildados!"
+
+# Subir com logs (foreground)
+dev:
+	@echo "🔍 Iniciando em modo desenvolvimento..."
+	$(DOCKER_COMPOSE) up
+
+# =============================================================================
+# BANCO DE DADOS
+# =============================================================================
+
+# Aplicar migrations
+migrate:
+	@echo "🗄️  Aplicando migrations..."
+	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) alembic upgrade head
+	@echo "✅ Migrations aplicadas!"
+
+# Criar nova migration
+migration:
+	@echo "📝 Criando nova migration: $(name)"
+	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) alembic revision --autogenerate -m "$(name)"
+	@echo "✅ Migration criada!"
+
+# Popular DB com dados de teste
+populate:
+	@echo "👥 Populando banco com dados de teste..."
+	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/populate.py
+	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/create_matches.py
+	@echo "✅ Banco populado com sucesso!"
+
+# Resetar ambiente: limpar DB, recriar, aplicar migrations e popular
+reset:
+	@echo "🔄 Resetando ambiente completo..."
+	$(DOCKER_COMPOSE) down -v
+	$(DOCKER_COMPOSE) up -d db
+	@echo "⏳ Aguardando banco inicializar..."
+	sleep 5
+	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) alembic upgrade head
+	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/populate.py
+	@echo "✅ Ambiente resetado com sucesso!"
+
+# Acessar banco
+psql:
+	@echo "🗄️  Conectando ao banco PostgreSQL..."
+	$(DOCKER_COMPOSE) exec -it $(DB_SERVICE) psql -U postgres -d tinder_clone
+
+# =============================================================================
+# DESENVOLVIMENTO LOCAL (sem Docker)
+# =============================================================================
+
+# Executar backend localmente
+run-backend:
+	@echo "🐍 Iniciando backend localmente..."
+	$(PYTHON) -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# Executar frontend localmente
+run-frontend:
+	@echo "⚛️  Iniciando frontend localmente..."
+	cd frontend && $(NPM) start
+
+# Executar ambos localmente (em paralelo)
+run-local: run-backend run-frontend
+
+# =============================================================================
+# TESTES
+# =============================================================================
+
+# Rodar testes
+test:
+	@echo "🧪 Executando testes..."
+	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) pytest -v
+	@echo "✅ Testes concluídos!"
+
+# Rodar testes com coverage
+test-coverage:
+	@echo "📊 Executando testes com coverage..."
+	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) pytest --cov=app --cov-report=html -v
+	@echo "✅ Testes com coverage concluídos!"
+
+# =============================================================================
+# LOGS E MONITORAMENTO
+# =============================================================================
 
 # Logs da API
 logs-api:
+	@echo "📋 Exibindo logs da API..."
 	$(DOCKER_COMPOSE) logs -f $(API_SERVICE)
 
 # Logs do banco
 logs-db:
+	@echo "📋 Exibindo logs do banco..."
 	$(DOCKER_COMPOSE) logs -f $(DB_SERVICE)
 
 # Logs do frontend
 logs-frontend:
+	@echo "📋 Exibindo logs do frontend..."
 	$(DOCKER_COMPOSE) logs -f $(FRONTEND_SERVICE)
 
-# Acessar banco
-psql:
-	$(DOCKER_COMPOSE) exec -it $(DB_SERVICE) psql -U postgres -d tinder_clone
+# Logs de todos os serviços
+logs:
+	@echo "📋 Exibindo logs de todos os serviços..."
+	$(DOCKER_COMPOSE) logs -f
 
-# Aplicar migrations
-migrate:
-	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) alembic upgrade head
+# =============================================================================
+# UTILITÁRIOS
+# =============================================================================
 
-# Criar nova migration
-migration:
-	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) alembic revision --autogenerate -m "$(name)"
+# Limpar cache e arquivos temporários
+clean:
+	@echo "🧹 Limpando cache e arquivos temporários..."
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
+	cd frontend && rm -rf node_modules/.cache 2>/dev/null || true
+	@echo "✅ Limpeza concluída!"
 
-# Rodar testes
-test:
-	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) pytest -v
+# Verificar status dos containers
+status:
+	@echo "📊 Status dos containers:"
+	$(DOCKER_COMPOSE) ps
 
-# Popular DB com 500 usuários fake
-populate:
-	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/populate.py
-	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/create_matches.py
-# Resetar ambiente: limpar DB, recriar, aplicar migrations e popular
-reset:
-	$(DOCKER_COMPOSE) down -v
-	$(DOCKER_COMPOSE) up -d db
-	sleep 5
-	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) alembic upgrade head
-	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/populate.py
-
-# Subir com logs (foreground)
-dev:
-	$(DOCKER_COMPOSE) up
+# Mostrar ajuda
+help:
+	@echo "🚀 Matcha Clone - Comandos disponíveis:"
+	@echo ""
+	@echo "📦 SETUP:"
+	@echo "  make setup           - Setup completo do projeto"
+	@echo "  make install-backend - Instalar dependências do backend"
+	@echo "  make install-frontend- Instalar dependências do frontend"
+	@echo "  make setup-env       - Configurar arquivo .env"
+	@echo ""
+	@echo "🐳 DOCKER:"
+	@echo "  make up              - Subir containers"
+	@echo "  make down            - Parar containers"
+	@echo "  make build           - Rebuild containers"
+	@echo "  make dev             - Modo desenvolvimento"
+	@echo ""
+	@echo "🗄️  BANCO DE DADOS:"
+	@echo "  make migrate         - Aplicar migrations"
+	@echo "  make populate        - Popular banco com dados de teste"
+	@echo "  make reset           - Reset completo do ambiente"
+	@echo "  make psql            - Acessar banco PostgreSQL"
+	@echo ""
+	@echo "🏃 DESENVOLVIMENTO LOCAL:"
+	@echo "  make run-backend     - Executar backend localmente"
+	@echo "  make run-frontend    - Executar frontend localmente"
+	@echo "  make run-local       - Executar ambos localmente"
+	@echo ""
+	@echo "🧪 TESTES:"
+	@echo "  make test            - Executar testes"
+	@echo "  make test-coverage   - Testes com coverage"
+	@echo ""
+	@echo "📋 LOGS:"
+	@echo "  make logs            - Logs de todos os serviços"
+	@echo "  make logs-api        - Logs da API"
+	@echo "  make logs-db         - Logs do banco"
+	@echo "  make logs-frontend   - Logs do frontend"
+	@echo ""
+	@echo "🔧 UTILITÁRIOS:"
+	@echo "  make clean           - Limpar cache e arquivos temporários"
+	@echo "  make status          - Status dos containers"
+	@echo "  make help            - Mostrar esta ajuda"
 
 # Comandos específicos do frontend
 frontend-install:
