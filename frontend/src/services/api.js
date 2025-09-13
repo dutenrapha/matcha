@@ -517,4 +517,46 @@ export const reportService = {
   },
 };
 
+// Serviços de visualizações
+export const viewService = {
+  // Registrar visualização de perfil
+  addView: async (viewerId, viewedId) => {
+    const response = await api.post('/views/', {
+      viewer_id: viewerId,
+      viewed_id: viewedId
+    });
+    return response.data;
+  },
+
+  // Obter visualizações recebidas pelo usuário
+  getViewsReceived: async (userId, limit = 20, offset = 0) => {
+    const response = await api.get(`/views/${userId}/received?limit=${limit}&offset=${offset}`);
+    return response.data;
+  },
+
+  // Obter visualizações dadas pelo usuário
+  getViewsGiven: async (userId, limit = 20, offset = 0) => {
+    const response = await api.get(`/views/${userId}/given?limit=${limit}&offset=${offset}`);
+    return response.data;
+  },
+
+  // Obter contagem de visualizações
+  getViewCount: async (userId) => {
+    const response = await api.get(`/views/${userId}/count`);
+    return response.data;
+  },
+
+  // Obter visualizações recentes
+  getRecentViews: async (userId, days = 7) => {
+    const response = await api.get(`/views/${userId}/recent?days=${days}`);
+    return response.data;
+  },
+
+  // Deletar visualização
+  deleteView: async (viewId) => {
+    const response = await api.delete(`/views/${viewId}`);
+    return response.data;
+  },
+};
+
 export default api;

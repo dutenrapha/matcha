@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { tagsService } from '../services/api';
+import { tagsService, viewService } from '../services/api';
 import './SwipeCard.css';
 
 const SwipeCard = ({ 
@@ -7,7 +7,8 @@ const SwipeCard = ({
   userTags, 
   onSwipe, 
   onNext, 
-  swipeFeedback 
+  swipeFeedback,
+  currentUserId 
 }) => {
   
   const [profileTags, setProfileTags] = useState([]);
@@ -35,8 +36,22 @@ const SwipeCard = ({
   useEffect(() => {
     if (profile?.user_id) {
       loadProfileTags();
+      
+      // Registrar visualização do perfil (apenas se não for o próprio usuário)
+      if (currentUserId && profile.user_id !== currentUserId) {
+        const registerView = async () => {
+          try {
+            await viewService.addView(currentUserId, profile.user_id);
+            console.log(`Visualização registrada: usuário ${currentUserId} visualizou perfil ${profile.user_id}`);
+          } catch (viewError) {
+            console.error('Erro ao registrar visualização:', viewError);
+            // Não mostrar erro para o usuário, apenas log
+          }
+        };
+        registerView();
+      }
     }
-  }, [profile?.user_id, loadProfileTags]);
+  }, [profile?.user_id, currentUserId, loadProfileTags]);
 
   // Função de swipe
   const handleSwipe = (direction) => {

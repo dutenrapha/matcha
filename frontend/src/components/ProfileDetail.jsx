@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { profileService, tagsService, matchesService, blockService } from '../services/api';
+import { profileService, tagsService, matchesService, blockService, viewService } from '../services/api';
 import ReportUserModal from './ReportUserModal';
 import './ProfileDetail.css';
 
@@ -31,6 +31,17 @@ const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false, onNavigateTo
       setProfileData(profileDetails);
       setProfileTags(tags);
       setBlockStatus(blockStatusData);
+
+      // Registrar visualização do perfil (apenas se não for o próprio usuário)
+      if (profile.user_id !== currentUserId) {
+        try {
+          await viewService.addView(currentUserId, profile.user_id);
+          console.log(`Visualização registrada: usuário ${currentUserId} visualizou perfil ${profile.user_id}`);
+        } catch (viewError) {
+          console.error('Erro ao registrar visualização:', viewError);
+          // Não mostrar erro para o usuário, apenas log
+        }
+      }
     } catch (err) {
       console.error('Erro ao carregar detalhes do perfil:', err);
       setError('Erro ao carregar perfil');

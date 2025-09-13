@@ -239,14 +239,81 @@ help:
 	@echo "  make fix-frontend    - Corrigir problemas do frontend (local)"
 	@echo "  make status          - Status dos containers"
 	@echo "  make help            - Mostrar esta ajuda"
+	@echo ""
+	@echo "⚛️  FRONTEND (resolver problemas de cache):"
+	@echo "  make frontend-clean-rebuild  - Limpar cache e rebuildar frontend"
+	@echo "  make frontend-force-rebuild  - Rebuild completo do frontend"
+	@echo "  make frontend-quick-rebuild  - Rebuild rápido (apenas remove build antigo)"
+	@echo "  make dev-frontend           - Modo desenvolvimento (rebuild + logs)"
+	@echo "  make frontend-logs          - Ver logs do frontend"
 
-# Comandos específicos do frontend
+# =============================================================================
+# FRONTEND - Comandos específicos para resolver problemas de cache
+# =============================================================================
+
+# Instalar dependências do frontend no container
 frontend-install:
+	@echo "📦 Instalando dependências do frontend no container..."
 	$(DOCKER_COMPOSE) run --rm $(FRONTEND_SERVICE) npm install
+	@echo "✅ Dependências instaladas!"
 
+# Build do frontend no container
 frontend-build:
+	@echo "🔨 Fazendo build do frontend no container..."
 	$(DOCKER_COMPOSE) run --rm $(FRONTEND_SERVICE) npm run build
+	@echo "✅ Build concluído!"
+
+# Limpar cache do frontend e rebuild
+frontend-clean-rebuild:
+	@echo "🧹 Limpando cache do frontend e rebuildando..."
+	$(DOCKER_COMPOSE) down $(FRONTEND_SERVICE)
+	@echo "🗑️  Removendo build antigo..."
+	sudo rm -rf frontend/build/
+	@echo "🔨 Rebuildando frontend sem cache..."
+	$(DOCKER_COMPOSE) build $(FRONTEND_SERVICE) --no-cache
+	$(DOCKER_COMPOSE) up $(FRONTEND_SERVICE) -d
+	@echo "✅ Frontend rebuildado com sucesso!"
+
+# Forçar rebuild completo do frontend
+frontend-force-rebuild:
+	@echo "🚀 Forçando rebuild completo do frontend..."
+	$(DOCKER_COMPOSE) down $(FRONTEND_SERVICE)
+	@echo "🗑️  Removendo build e node_modules antigos..."
+	sudo rm -rf frontend/build/ frontend/node_modules/
+	@echo "🔨 Rebuildando frontend do zero..."
+	$(DOCKER_COMPOSE) build $(FRONTEND_SERVICE) --no-cache
+	$(DOCKER_COMPOSE) up $(FRONTEND_SERVICE) -d
+	@echo "✅ Frontend rebuildado do zero com sucesso!"
+
+# Rebuild rápido do frontend (apenas remove build antigo)
+frontend-quick-rebuild:
+	@echo "⚡ Rebuild rápido do frontend..."
+	$(DOCKER_COMPOSE) down $(FRONTEND_SERVICE)
+	@echo "🗑️  Removendo build antigo..."
+	sudo rm -rf frontend/build/
+	@echo "🔨 Rebuildando frontend..."
+	$(DOCKER_COMPOSE) up $(FRONTEND_SERVICE) -d
+	@echo "✅ Frontend rebuildado rapidamente!"
 
 # Acessar shell do frontend
 frontend-shell:
 	$(DOCKER_COMPOSE) exec -it $(FRONTEND_SERVICE) /bin/sh
+
+# Ver logs do frontend
+frontend-logs:
+	@echo "📋 Exibindo logs do frontend..."
+	$(DOCKER_COMPOSE) logs -f $(FRONTEND_SERVICE)
+
+# Comando de desenvolvimento - rebuild automático quando há mudanças
+dev-frontend:
+	@echo "🔄 Iniciando modo desenvolvimento do frontend..."
+	@echo "📝 Este comando irá:"
+	@echo "   1. Parar o frontend atual"
+	@echo "   2. Remover build antigo"
+	@echo "   3. Rebuildar sem cache"
+	@echo "   4. Iniciar com logs em tempo real"
+	@echo ""
+	$(DOCKER_COMPOSE) down $(FRONTEND_SERVICE)
+	sudo rm -rf frontend/build/
+	$(DOCKER_COMPOSE) build $(FRONTEND_SERVICE) --no-cache
+	$(DOCKER_COMPOSE) up $(FRONTEND_SERVICE)

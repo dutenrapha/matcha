@@ -9,6 +9,7 @@ import NotificationsList from './NotificationsList';
 import NotificationIndicator from './NotificationIndicator';
 import BlockedUsers from './BlockedUsers';
 import ReportsList from './ReportsList';
+import ViewsList from './ViewsList';
 import './Dashboard.css';
 
 // Componentes das seções (placeholder por enquanto)
@@ -85,6 +86,12 @@ const ReportsSection = () => (
   </div>
 );
 
+const ViewsSection = ({ user }) => (
+  <div className="section-content">
+    <ViewsList user={user} />
+  </div>
+);
+
 const SettingsSection = () => (
   <div className="section-content">
     <h2>⚙️ Configurações</h2>
@@ -116,6 +123,7 @@ const Dashboard = () => {
     { id: 'matches', label: 'Matches', icon: '💕', component: MatchesSection },
     { id: 'chat', label: 'Chat', icon: '💬', component: ChatSection },
     { id: 'notifications', label: 'Notificações', icon: '🔔', component: NotificationsSection },
+    { id: 'views', label: 'Visualizações', icon: '👁️', component: ViewsSection },
     { id: 'blocked', label: 'Bloqueados', icon: '🚫', component: BlockedUsersSection },
     { id: 'reports', label: 'Reports', icon: '📝', component: ReportsSection },
     { id: 'settings', label: 'Configurações', icon: '⚙️', component: SettingsSection },
@@ -185,7 +193,11 @@ const Dashboard = () => {
 
         {/* Main Content */}
         <main className="dashboard-main">
-          <ActiveComponent onNavigateToChat={handleNavigateToChat} />
+          {activeSection === 'views' ? (
+            <ActiveComponent user={user} onNavigateToChat={handleNavigateToChat} />
+          ) : (
+            <ActiveComponent onNavigateToChat={handleNavigateToChat} />
+          )}
         </main>
       </div>
     </div>

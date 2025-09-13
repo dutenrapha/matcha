@@ -180,6 +180,7 @@ const DiscoverProfiles = () => {
                      userTags={userTags}
                      onNext={handleNextProfile}
                      onRefresh={handleRefresh}
+                     currentUserId={user?.user_id}
                      onSwipe={handleSwipe}
                      swipeFeedback={swipeFeedback}
                    />
@@ -194,6 +195,7 @@ const DiscoverProfiles = () => {
                    userTags={userTags}
                    onNext={handleNextProfile}
                    onRefresh={handleRefresh}
+                   currentUserId={user?.user_id}
                    onSwipe={handleSwipe}
                    swipeFeedback={swipeFeedback}
                  />
