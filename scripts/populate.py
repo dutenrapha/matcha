@@ -29,6 +29,14 @@ async def populate_users(n=500):
     try:
         print(f"🚀 Iniciando população de {n} usuários...")
         
+        # Limpar dados existentes (opcional - descomente se necessário)
+        print("🧹 Limpando dados existentes...")
+        await conn.execute("DELETE FROM user_tags")
+        await conn.execute("DELETE FROM matches")
+        await conn.execute("DELETE FROM swipes")
+        await conn.execute("DELETE FROM profiles")
+        await conn.execute("DELETE FROM users")
+        
         # Criar tags se não existirem
         print("📝 Criando tags...")
         for tag_name in POPULAR_TAGS:
@@ -43,7 +51,7 @@ async def populate_users(n=500):
         for i in range(n):
             # Dados do usuário
             name = faker.first_name()
-            email = f"{name.lower()}{i}@example.com"
+            email = f"{name.lower()}{i}{random.randint(1000, 9999)}@example.com"
             password_hash = hash_password("TestPass123!")
             age = random.randint(18, 50)
             gender = random.choice(["male", "female"])
@@ -159,19 +167,21 @@ async def create_sample_swipes_and_matches():
             
             if match_id:
                 # Criar chat para o match
-                await conn.execute("""
+                chat_id = await conn.fetchval("""
                     INSERT INTO chats (match_id) VALUES ($1)
+                    RETURNING chat_id
                 """, match_id)
                 
-                # Criar algumas mensagens
-                for _ in range(random.randint(1, 5)):
-                    sender_id = random.choice([user1_id, user2_id])
-                    content = faker.sentence(nb_words=random.randint(3, 10))
-                    
-                    await conn.execute("""
-                        INSERT INTO messages (chat_id, sender_id, content)
-                        VALUES ($1, $2, $3)
-                    """, match_id, sender_id, content)
+                if chat_id:
+                    # Criar algumas mensagens
+                    for _ in range(random.randint(1, 5)):
+                        sender_id = random.choice([user1_id, user2_id])
+                        content = faker.sentence(nb_words=random.randint(3, 10))
+                        
+                        await conn.execute("""
+                            INSERT INTO messages (chat_id, sender_id, content)
+                            VALUES ($1, $2, $3)
+                        """, chat_id, sender_id, content)
         
         print("✅ Swipes e matches criados!")
         

@@ -211,7 +211,6 @@ make clean          # Limpar cache e arquivos temporários
 make down && make up # Reiniciar containers
 make logs           # Ver logs de todos os serviços
 make fix-frontend   # Corrigir problemas do frontend
-make populate-safe  # Popular banco (versão segura)
 ```
 
 ## 🚨 Solução de Problemas
@@ -228,10 +227,13 @@ make populate-safe
 ```
 
 ### Erro no Frontend (localhost:3000)
-Se você receber erro de "html-webpack-plugin":
+Se você receber erro de "html-webpack-plugin" ou "Could not find a required file":
 
 ```bash
-# Corrigir problemas do frontend
+# Corrigir problemas do frontend (Docker)
+make fix-frontend-docker
+
+# Ou corrigir problemas do frontend (local)
 make fix-frontend
 
 # Ou reinstalar dependências

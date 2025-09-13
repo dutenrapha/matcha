@@ -108,27 +108,17 @@ reset:
 	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/populate.py
 	@echo "✅ Ambiente resetado com sucesso!"
 
-# Popular banco com dados de teste (versão segura)
-populate-safe:
-	@echo "👥 Populando banco com dados de teste (versão segura)..."
-	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python -c "
-import asyncio
-import asyncpg
-import sys
-import os
-sys.path.append('/app')
-from scripts.populate import populate_users
 
-async def safe_populate():
-    try:
-        await populate_users(100)  # Menos usuários para evitar conflitos
-        print('✅ População segura concluída!')
-    except Exception as e:
-        print(f'⚠️  Erro na população: {e}')
-        print('💡 Tente: make reset (para limpar e recriar)')
 
-asyncio.run(safe_populate())
 "
+
+# Corrigir problemas do frontend (rebuild)
+fix-frontend-docker:
+	@echo "🔧 Corrigindo problemas do frontend (Docker)..."
+	$(DOCKER_COMPOSE) down frontend
+	$(DOCKER_COMPOSE) build --no-cache frontend
+	$(DOCKER_COMPOSE) up -d frontend
+	@echo "✅ Frontend corrigido!"
 
 # Acessar banco
 psql:
@@ -258,7 +248,8 @@ help:
 	@echo ""
 	@echo "🔧 UTILITÁRIOS:"
 	@echo "  make clean           - Limpar cache e arquivos temporários"
-	@echo "  make fix-frontend    - Corrigir problemas do frontend"
+	@echo "  make fix-frontend    - Corrigir problemas do frontend (local)"
+	@echo "  make fix-frontend-docker - Corrigir problemas do frontend (Docker)"
 	@echo "  make status          - Status dos containers"
 	@echo "  make help            - Mostrar esta ajuda"
 

@@ -13,6 +13,9 @@ RUN npm install
 # Copiar código fonte
 COPY . .
 
+# Verificar se os arquivos estão no lugar correto
+RUN ls -la /app/public/
+
 # Expor porta 3000
 EXPOSE 3000
 
