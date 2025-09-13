@@ -219,25 +219,20 @@ make fix-frontend   # Corrigir problemas do frontend
 Se você receber erro de "duplicate key value violates unique constraint":
 
 ```bash
-# Opção 1: Reset completo
+# Reset completo (recomendado)
 make reset
-
-# Opção 2: População segura
-make populate-safe
 ```
 
 ### Erro no Frontend (localhost:3000)
 Se você receber erro de "html-webpack-plugin" ou "Could not find a required file":
 
 ```bash
-# Corrigir problemas do frontend (Docker)
-make fix-frontend-docker
+# O comando make up já faz rebuild automático
+make down
+make up
 
 # Ou corrigir problemas do frontend (local)
 make fix-frontend
-
-# Ou reinstalar dependências
-make install-frontend
 ```
 
 ### Problemas Gerais
@@ -247,7 +242,7 @@ make clean
 make setup
 make up
 make migrate
-make populate-safe
+make populate
 ```
 
 ## 🔗 Endpoints Principais

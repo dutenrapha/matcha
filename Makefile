@@ -56,6 +56,7 @@ up:
 	@echo "🌐 API: http://localhost:8000"
 	@echo "📚 Docs: http://localhost:8000/docs"
 	@echo "📧 Mailhog: http://localhost:8025"
+	@echo "⚛️  Frontend: http://localhost:3000"
 
 # Derrubar containers
 down:
@@ -108,17 +109,6 @@ reset:
 	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/populate.py
 	@echo "✅ Ambiente resetado com sucesso!"
 
-
-
-"
-
-# Corrigir problemas do frontend (rebuild)
-fix-frontend-docker:
-	@echo "🔧 Corrigindo problemas do frontend (Docker)..."
-	$(DOCKER_COMPOSE) down frontend
-	$(DOCKER_COMPOSE) build --no-cache frontend
-	$(DOCKER_COMPOSE) up -d frontend
-	@echo "✅ Frontend corrigido!"
 
 # Acessar banco
 psql:
@@ -227,7 +217,6 @@ help:
 	@echo "🗄️  BANCO DE DADOS:"
 	@echo "  make migrate         - Aplicar migrations"
 	@echo "  make populate        - Popular banco com dados de teste"
-	@echo "  make populate-safe   - Popular banco (versão segura)"
 	@echo "  make reset           - Reset completo do ambiente"
 	@echo "  make psql            - Acessar banco PostgreSQL"
 	@echo ""
@@ -249,7 +238,6 @@ help:
 	@echo "🔧 UTILITÁRIOS:"
 	@echo "  make clean           - Limpar cache e arquivos temporários"
 	@echo "  make fix-frontend    - Corrigir problemas do frontend (local)"
-	@echo "  make fix-frontend-docker - Corrigir problemas do frontend (Docker)"
 	@echo "  make status          - Status dos containers"
 	@echo "  make help            - Mostrar esta ajuda"
 

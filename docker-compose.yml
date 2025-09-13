@@ -54,10 +54,6 @@ services:
       - "3000:3000"
     depends_on:
       - api
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    working_dir: /app
 
 volumes:
   postgres_data:

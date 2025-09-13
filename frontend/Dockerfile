@@ -14,6 +14,7 @@ RUN npm install
 COPY . .
 
 # Verificar se os arquivos estão no lugar correto
+RUN ls -la /app/
 RUN ls -la /app/public/
 
 # Expor porta 3000
