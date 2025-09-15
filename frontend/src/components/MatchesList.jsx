@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { matchesService } from '../services/api';
 import ProfileDetail from './ProfileDetail';
+import OnlineStatus from './OnlineStatus';
 import './MatchesList.css';
 
 const MatchesList = ({ onNavigateToChat }) => {
@@ -124,7 +125,10 @@ const MatchesList = ({ onNavigateToChat }) => {
               </div>
               
               <div className="match-info">
-                <h3>{match.name}</h3>
+                <div className="match-name-container">
+                  <h3>{match.name}</h3>
+                  <OnlineStatus userId={match.user_id} showText={false} size="small" />
+                </div>
                 <p className="match-age">{match.age} anos</p>
                 {match.bio && (
                   <p className="match-bio">

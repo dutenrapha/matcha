@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { messageService } from '../services/api';
+import { messageService, statusService } from '../services/api';
+import OnlineStatus from './OnlineStatus';
 import './ChatWindow.css';
 
 const ChatWindow = ({ chat, onClose }) => {
@@ -179,9 +180,7 @@ const ChatWindow = ({ chat, onClose }) => {
           />
           <div className="chat-header-details">
             <h3>{chat.name}</h3>
-            <span className={`chat-status ${wsConnection ? 'online' : 'offline'}`}>
-              {wsConnection ? '🟢 Online' : '🔴 Offline'}
-            </span>
+            <OnlineStatus userId={chat.user_id} showText={true} size="small" />
           </div>
         </div>
         <button onClick={onClose} className="chat-close-btn">

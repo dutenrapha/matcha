@@ -1,0 +1,72 @@
+.online-status-manager {
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-indicator.online {
+  background-color: #4CAF50;
+  box-shadow: 0 0 4px rgba(76, 175, 80, 0.6);
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.offline {
+  background-color: #f44336;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(76, 175, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
+}
+
+.status-text {
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.last-seen {
+  font-size: 10px;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .online-status-manager {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  
+  .status-info {
+    gap: 6px;
+  }
+  
+  .status-indicator {
+    width: 6px;
+    height: 6px;
+  }
+}

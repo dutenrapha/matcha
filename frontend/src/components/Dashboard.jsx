@@ -10,13 +10,18 @@ import NotificationIndicator from './NotificationIndicator';
 import BlockedUsers from './BlockedUsers';
 import ReportsList from './ReportsList';
 import ViewsList from './ViewsList';
+import OnlineStatusManager from './OnlineStatusManager';
 import './Dashboard.css';
 
 // Componentes das seções (placeholder por enquanto)
-const HomeSection = () => (
+const HomeSection = ({ user }) => (
   <div className="section-content">
     <h2>🏠 Dashboard</h2>
     <p>Bem-vindo ao Matcha! Aqui você pode ver um resumo da sua atividade.</p>
+    
+    {/* Status Online Manager */}
+    {user && <OnlineStatusManager userId={user.user_id} />}
+    
     <div className="stats-grid">
       <div className="stat-card">
         <h3>Fame Rating</h3>
@@ -193,7 +198,9 @@ const Dashboard = () => {
 
         {/* Main Content */}
         <main className="dashboard-main">
-          {activeSection === 'views' ? (
+          {activeSection === 'home' ? (
+            <ActiveComponent user={user} onNavigateToChat={handleNavigateToChat} />
+          ) : activeSection === 'views' ? (
             <ActiveComponent user={user} onNavigateToChat={handleNavigateToChat} />
           ) : (
             <ActiveComponent onNavigateToChat={handleNavigateToChat} />

@@ -193,9 +193,17 @@
   margin-bottom: 20px;
 }
 
+.match-name-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
 .match-info h3 {
   color: #1f2937;
-  margin: 0 0 8px 0;
+  margin: 0;
   font-size: 1.4rem;
   font-weight: 700;
 }

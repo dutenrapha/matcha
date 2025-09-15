@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { chatService } from '../services/api';
+import OnlineStatus from './OnlineStatus';
 import './ChatList.css';
 
 const ChatList = ({ onChatSelect, selectedChatId }) => {
@@ -161,10 +162,11 @@ const ChatList = ({ onChatSelect, selectedChatId }) => {
             
             <div className="chat-info">
               <div className="chat-header">
-                <h3 className="chat-name">{chat.name}</h3>
-                <span className="chat-time">
-                  {formatLastMessageTime(chat.last_message_time)}
-                </span>
+                <div className="chat-name-container">
+                  <h3 className="chat-name">{chat.name}</h3>
+                  <OnlineStatus userId={chat.user_id} showText={false} size="small" />
+                </div>
+
               </div>
               
               <div className="chat-preview">

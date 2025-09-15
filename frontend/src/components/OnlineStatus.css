@@ -1,0 +1,90 @@
+.online-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+.online-status.small {
+  font-size: 11px;
+  gap: 4px;
+}
+
+.online-status.large {
+  font-size: 14px;
+  gap: 8px;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.online-status.small .status-indicator {
+  width: 6px;
+  height: 6px;
+}
+
+.online-status.large .status-indicator {
+  width: 10px;
+  height: 10px;
+}
+
+.status-indicator.online {
+  background-color: #4CAF50;
+  box-shadow: 0 0 4px rgba(76, 175, 80, 0.6);
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.offline {
+  background-color: #9E9E9E;
+}
+
+.status-indicator.loading {
+  background-color: #FFC107;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(76, 175, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
+}
+
+.status-text {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.online-status.small .status-text {
+  font-size: 10px;
+}
+
+.online-status.large .status-text {
+  font-size: 13px;
+}
+
+/* Status online com cor verde */
+.status-indicator.online + .status-text {
+  color: #4CAF50;
+}
+
+/* Status offline com cor cinza */
+.status-indicator.offline + .status-text {
+  color: #9E9E9E;
+}
+
+/* Status loading com cor amarela */
+.status-indicator.loading + .status-text {
+  color: #FFC107;
+}

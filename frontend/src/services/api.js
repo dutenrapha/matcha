@@ -559,4 +559,36 @@ export const viewService = {
   },
 };
 
+// Serviços de status online
+export const statusService = {
+  // Atualizar status online do usuário
+  updateOnlineStatus: async (isOnline) => {
+    const response = await api.put('/status/online', {
+      is_online: isOnline
+    });
+    return response.data;
+  },
+
+  // Obter status de um usuário específico
+  getUserStatus: async (userId) => {
+    const response = await api.get(`/status/${userId}`);
+    return response.data;
+  },
+
+  // Obter status de múltiplos usuários
+  getMultipleUsersStatus: async (userIds) => {
+    const userIdsString = Array.isArray(userIds) ? userIds.join(',') : userIds;
+    const response = await api.get('/status/batch', {
+      params: { user_ids: userIdsString }
+    });
+    return response.data;
+  },
+
+  // Obter lista de usuários online
+  getOnlineUsers: async () => {
+    const response = await api.get('/status/online/users');
+    return response.data;
+  }
+};
+
 export default api;
