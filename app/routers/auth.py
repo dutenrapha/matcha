@@ -180,7 +180,7 @@ async def request_reset(data: RequestResetIn, conn=Depends(get_connection)):
     """, token, user["user_id"], expires)
     
     # Criar link de reset
-    reset_link = f"http://localhost:8000/auth/reset-password?token={token}"
+    reset_link = f"http://localhost:3000/reset-password?token={token}"
     
     # Enviar email
     subject = "Reset your Matcha password"

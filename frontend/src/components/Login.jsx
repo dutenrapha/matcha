@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
-const Login = ({ onSwitchToSignup }) => {
+const Login = ({ onSwitchToSignup, onSwitchToForgotPassword }) => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -82,6 +82,15 @@ const Login = ({ onSwitchToSignup }) => {
         </form>
 
         <div className="auth-switch">
+          <p>
+            <button 
+              type="button" 
+              className="switch-button"
+              onClick={onSwitchToForgotPassword}
+            >
+              Esqueci minha senha
+            </button>
+          </p>
           <p>
             Não tem uma conta?{' '}
             <button 

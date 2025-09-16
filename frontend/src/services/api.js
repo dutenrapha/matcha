@@ -85,6 +85,21 @@ export const authService = {
     const response = await api.post(`/auth/send-verification?user_id=${userId}`);
     return response.data;
   },
+
+  // Solicitar reset de senha
+  requestPasswordReset: async (email) => {
+    const response = await api.post('/auth/request-reset', { email });
+    return response.data;
+  },
+
+  // Resetar senha com token
+  resetPassword: async (token, newPassword) => {
+    const response = await api.post('/auth/reset-password', {
+      token,
+      new_password: newPassword
+    });
+    return response.data;
+  },
 };
 
 // Serviços de usuário

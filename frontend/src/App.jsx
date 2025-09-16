@@ -3,13 +3,15 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 import Dashboard from './components/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
-// Componente para a página inicial (login/signup)
+// Componente para a página inicial (login/signup/forgot password)
 const HomePage = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [authMode, setAuthMode] = useState('login'); // 'login', 'signup', 'forgot'
   const { isAuthenticated } = useAuth();
 
   // Se usuário já está logado, redirecionar para dashboard
@@ -19,10 +21,17 @@ const HomePage = () => {
 
   return (
     <div className="app-container">
-      {isLogin ? (
-        <Login onSwitchToSignup={() => setIsLogin(false)} />
-      ) : (
-        <Signup onSwitchToLogin={() => setIsLogin(true)} />
+      {authMode === 'login' && (
+        <Login 
+          onSwitchToSignup={() => setAuthMode('signup')}
+          onSwitchToForgotPassword={() => setAuthMode('forgot')}
+        />
+      )}
+      {authMode === 'signup' && (
+        <Signup onSwitchToLogin={() => setAuthMode('login')} />
+      )}
+      {authMode === 'forgot' && (
+        <ForgotPassword onBackToLogin={() => setAuthMode('login')} />
       )}
     </div>
   );
@@ -36,6 +45,9 @@ const AppContent = () => {
         <Routes>
           {/* Rota raiz - mostra login/signup se não logado */}
           <Route path="/" element={<HomePage />} />
+          
+          {/* Rota para reset de senha */}
+          <Route path="/reset-password" element={<ResetPassword />} />
           
           {/* Rota protegida - dashboard */}
           <Route 
