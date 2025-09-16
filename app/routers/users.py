@@ -51,24 +51,45 @@ async def advanced_search(
     conn=Depends(get_connection),
 ):
     """Busca avançada de usuários"""
-    # Obter localização do usuário atual
-    profile = await conn.fetchrow(
-        "SELECT latitude, longitude FROM profiles WHERE user_id = $1",
-        current_user_id
-    )
-    if not profile:
-        raise HTTPException(
-            status_code=400, 
-            detail="Profile not found. Please complete your profile first."
-        )
+    # Obter preferências do usuário (incluindo localização)
+    prefs = await conn.fetchrow("""
+        SELECT preferred_gender, age_min, age_max, max_distance_km,
+               p.latitude, p.longitude
+        FROM preferences pref
+        JOIN profiles p ON pref.user_id = p.user_id
+        WHERE pref.user_id = $1
+    """, current_user_id)
     
-    if profile["latitude"] is None or profile["longitude"] is None:
-        raise HTTPException(
-            status_code=400, 
-            detail="Location not set. Please update your profile with your location."
+    if not prefs:
+        # Se não tem preferências, verificar se tem perfil
+        profile = await conn.fetchrow(
+            "SELECT latitude, longitude FROM profiles WHERE user_id = $1",
+            current_user_id
         )
-
-    lat, lon = profile["latitude"], profile["longitude"]
+        if not profile:
+            raise HTTPException(
+                status_code=400, 
+                detail="Profile not found. Please complete your profile first."
+            )
+        
+        if profile["latitude"] is None or profile["longitude"] is None:
+            raise HTTPException(
+                status_code=400, 
+                detail="Location not set. Please update your profile with your location."
+            )
+        
+        # Usar preferências padrão
+        prefs = {
+            'preferred_gender': 'both',
+            'age_min': 18,
+            'age_max': 50,
+            'max_distance_km': 50,
+            'latitude': profile['latitude'],
+            'longitude': profile['longitude']
+        }
+    
+    lat, lon = prefs["latitude"], prefs["longitude"]
+    preferred_gender = prefs["preferred_gender"]
 
     # Normalizar tags
     tags_list = []
@@ -91,10 +112,11 @@ async def advanced_search(
         FROM users u
         JOIN profiles p ON u.user_id = p.user_id
         WHERE u.user_id <> $1
+          AND ($4 = 'both' OR p.gender = $4)
     """
 
-    params = [current_user_id, lat, lon]
-    param_count = 4  # próximo placeholder livre
+    params = [current_user_id, lat, lon, preferred_gender]
+    param_count = 5  # próximo placeholder livre
 
     # Filtros dinâmicos
     if age_min is not None:
