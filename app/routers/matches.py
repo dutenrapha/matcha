@@ -53,10 +53,20 @@ async def get_match_count(user_id: int, conn=Depends(get_connection)):
 @router.delete("/{match_id}", response_model=dict)
 async def delete_match(match_id: int, conn=Depends(get_connection)):
     """Deletar match (unmatch)"""
-    # Verificar se match existe
-    match = await conn.fetchrow("SELECT match_id FROM matches WHERE match_id = $1", match_id)
+    # Verificar se match existe e obter os user_ids
+    match = await conn.fetchrow("SELECT match_id, user1_id, user2_id FROM matches WHERE match_id = $1", match_id)
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
+    
+    user1_id = match["user1_id"]
+    user2_id = match["user2_id"]
+    
+    # Deletar swipes mútuos que criaram o match
+    await conn.execute("""
+        DELETE FROM swipes 
+        WHERE (swiper_id = $1 AND swiped_id = $2 AND direction = 'like')
+           OR (swiper_id = $2 AND swiped_id = $1 AND direction = 'like')
+    """, user1_id, user2_id)
     
     # Deletar match (cascade vai deletar chat e mensagens)
     await conn.execute("DELETE FROM matches WHERE match_id = $1", match_id)
