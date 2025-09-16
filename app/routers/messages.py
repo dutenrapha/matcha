@@ -46,7 +46,7 @@ async def send_message(message: MessageIn, conn=Depends(get_connection)):
         content = f"{recipient_info['sender_name']} enviou uma mensagem 💬"
         
         # Salvar notificação no banco
-        await save_notification(conn, recipient_info['recipient_id'], "message", content)
+        await save_notification(conn, recipient_info['recipient_id'], "message", content, message.sender_id)
         
         # Enviar notificação em tempo real
         notification_data = {

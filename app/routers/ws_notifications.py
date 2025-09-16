@@ -9,12 +9,12 @@ router = APIRouter(prefix="/ws", tags=["notifications"])
 # Conexões ativas: user_id -> lista de websockets
 active_notifications: Dict[int, List[WebSocket]] = {}
 
-async def save_notification(conn, user_id: int, notif_type: str, content: str):
+async def save_notification(conn, user_id: int, notif_type: str, content: str, related_user_id: int = None):
     """Insere notificação no banco"""
     await conn.execute("""
-        INSERT INTO notifications (user_id, type, content)
-        VALUES ($1, $2, $3)
-    """, user_id, notif_type, content)
+        INSERT INTO notifications (user_id, type, content, related_user_id)
+        VALUES ($1, $2, $3, $4)
+    """, user_id, notif_type, content, related_user_id)
 
 async def push_notification(user_id: int, message: dict):
     """Envia notificação para todos os sockets do usuário"""

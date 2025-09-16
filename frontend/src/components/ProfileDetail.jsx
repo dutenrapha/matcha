@@ -15,25 +15,34 @@ const ProfileDetail = ({ profile, isOpen, onClose, isMatch = false, onNavigateTo
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const loadProfileDetails = useCallback(async () => {
-    if (!profile?.user_id || !currentUserId) return;
+    if (!profile?.user_id) return;
 
     try {
       setLoading(true);
       setError('');
 
-      // Carregar dados completos do perfil e status de bloqueio
-      const [profileDetails, tags, blockStatusData] = await Promise.all([
+      // Carregar dados completos do perfil
+      const [profileDetails, tags] = await Promise.all([
         profileService.getProfile(profile.user_id),
-        tagsService.getUserTags(profile.user_id),
-        blockService.checkBlockStatus(currentUserId, profile.user_id)
+        tagsService.getUserTags(profile.user_id)
       ]);
 
       setProfileData(profileDetails);
       setProfileTags(tags);
-      setBlockStatus(blockStatusData);
 
-      // Registrar visualização do perfil (apenas se não for o próprio usuário)
-      if (profile.user_id !== currentUserId) {
+      // Carregar status de bloqueio apenas se currentUserId estiver disponível
+      if (currentUserId) {
+        try {
+          const blockStatusData = await blockService.checkBlockStatus(currentUserId, profile.user_id);
+          setBlockStatus(blockStatusData);
+        } catch (blockError) {
+          console.error('Erro ao verificar status de bloqueio:', blockError);
+          setBlockStatus(null);
+        }
+      }
+
+      // Registrar visualização do perfil (apenas se currentUserId estiver disponível e não for o próprio usuário)
+      if (currentUserId && profile.user_id !== currentUserId) {
         try {
           await viewService.addView(currentUserId, profile.user_id);
           console.log(`Visualização registrada: usuário ${currentUserId} visualizou perfil ${profile.user_id}`);

@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNotificationContext } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
+import ProfileDetail from './ProfileDetail';
 import './NotificationsList.css';
 
 const NotificationsList = () => {
+  const { user } = useAuth();
   const {
     notifications,
     unreadCount,
@@ -14,6 +17,9 @@ const NotificationsList = () => {
     deleteAllNotifications,
     loadNotifications
   } = useNotificationContext();
+
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [isProfileDetailOpen, setIsProfileDetailOpen] = useState(false);
 
   const handleMarkAsRead = (notificationId) => {
     markAsRead(notificationId);
@@ -32,6 +38,27 @@ const NotificationsList = () => {
       return;
     }
     deleteAllNotifications();
+  };
+
+  const handleProfileClick = (notification) => {
+    if (notification.related_user_id) {
+      // Criar um objeto de perfil básico para o ProfileDetail
+      const profileData = {
+        user_id: notification.related_user_id,
+        name: notification.related_user_name || 'Usuário',
+        username: notification.related_user_username,
+        avatar_url: notification.related_user_avatar
+      };
+      
+      console.log('Opening profile for:', profileData);
+      setSelectedProfile(profileData);
+      setIsProfileDetailOpen(true);
+    }
+  };
+
+  const handleCloseProfileDetail = () => {
+    setIsProfileDetailOpen(false);
+    setSelectedProfile(null);
   };
 
   const getNotificationIcon = (type) => {
@@ -168,7 +195,20 @@ const NotificationsList = () => {
               
               <div className="notification-content">
                 <div className="notification-text">
-                  {notification.content}
+                  {notification.related_user_id ? (
+                    <span>
+                      <button 
+                        className="notification-user-link"
+                        onClick={() => handleProfileClick(notification)}
+                        title="Ver perfil"
+                      >
+                        {notification.related_user_name || 'Usuário'}
+                      </button>
+                      {notification.content.replace(notification.related_user_name || 'Usuário', '').trim()}
+                    </span>
+                  ) : (
+                    notification.content
+                  )}
                 </div>
                 <div className="notification-meta">
                   <span className="notification-time">
@@ -212,6 +252,15 @@ const NotificationsList = () => {
           </p>
         </div>
       )}
+
+      {/* Modal de Visualização de Perfil */}
+      <ProfileDetail
+        profile={selectedProfile}
+        isOpen={isProfileDetailOpen}
+        onClose={handleCloseProfileDetail}
+        isMatch={false}
+        currentUserId={user?.user_id}
+      />
     </div>
   );
 };

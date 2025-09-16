@@ -8,6 +8,7 @@ class NotificationOut(BaseModel):
     content: str
     is_read: bool
     created_at: datetime
+    related_user_id: int | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -26,6 +27,7 @@ class NotificationCreate(BaseModel):
     user_id: int
     type: str
     content: str
+    related_user_id: int | None = None
 
     model_config = ConfigDict(
         json_schema_extra={

@@ -31,7 +31,7 @@ async def add_view(view: ViewIn, conn=Depends(get_connection)):
         content = f"{viewer_info['name']} visualizou seu perfil 👁️"
         
         # Salvar notificação no banco
-        await save_notification(conn, view.viewed_id, "view", content)
+        await save_notification(conn, view.viewed_id, "view", content, view.viewer_id)
         
         # Enviar notificação em tempo real
         notification_data = {

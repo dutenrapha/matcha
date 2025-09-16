@@ -241,6 +241,26 @@
   word-wrap: break-word;
 }
 
+.notification-user-link {
+  background: none;
+  border: none;
+  color: #2196f3;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: all 0.2s ease;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.notification-user-link:hover {
+  color: #1976d2;
+  text-decoration-color: #1976d2;
+  transform: translateY(-1px);
+}
+
 .notification-meta {
   display: flex;
   align-items: center;

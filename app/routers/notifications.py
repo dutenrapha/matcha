@@ -8,9 +8,16 @@ router = APIRouter(prefix="/notifications", tags=["notifications"])
 async def get_notifications(user_id: int, limit: int = 20, offset: int = 0, conn=Depends(get_connection)):
     """Obter notificações do usuário"""
     rows = await conn.fetch("""
-        SELECT * FROM notifications 
-        WHERE user_id = $1
-        ORDER BY created_at DESC
+        SELECT 
+            n.*,
+            u.name as related_user_name,
+            u.username as related_user_username,
+            p.avatar_url as related_user_avatar
+        FROM notifications n
+        LEFT JOIN users u ON n.related_user_id = u.user_id
+        LEFT JOIN profiles p ON n.related_user_id = p.user_id
+        WHERE n.user_id = $1
+        ORDER BY n.created_at DESC
         LIMIT $2 OFFSET $3
     """, user_id, limit, offset)
     

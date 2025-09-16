@@ -50,8 +50,8 @@ async def add_swipe(swipe: SwipeIn, conn=Depends(get_connection)):
                 content2 = f"Você tem um novo match com {user1['name'] if user1 else 'alguém'}! 💕"
                 
                 # Salvar notificações no banco
-                await save_notification(conn, swipe.swiper_id, "match", content1)
-                await save_notification(conn, swipe.swiped_id, "match", content2)
+                await save_notification(conn, swipe.swiper_id, "match", content1, swipe.swiped_id)
+                await save_notification(conn, swipe.swiped_id, "match", content2, swipe.swiper_id)
                 
                 # Enviar notificações em tempo real
                 notif1 = {
@@ -77,7 +77,7 @@ async def add_swipe(swipe: SwipeIn, conn=Depends(get_connection)):
         
         # Se não há match, criar notificação de like
         content = f"{liker['name'] if liker else 'Alguém'} curtiu seu perfil! ❤️"
-        await save_notification(conn, swipe.swiped_id, "like", content)
+        await save_notification(conn, swipe.swiped_id, "like", content, swipe.swiper_id)
         
         notif = {
             "user_id": swipe.swiped_id,
@@ -93,7 +93,7 @@ async def add_swipe(swipe: SwipeIn, conn=Depends(get_connection)):
         
         # Criar notificação de unlike
         content = f"{disliker['name'] if disliker else 'Alguém'} descurtiu seu perfil 💔"
-        await save_notification(conn, swipe.swiped_id, "unlike", content)
+        await save_notification(conn, swipe.swiped_id, "unlike", content, swipe.swiper_id)
         
         notif = {
             "user_id": swipe.swiped_id,
