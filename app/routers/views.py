@@ -13,10 +13,12 @@ async def add_view(view: ViewIn, conn=Depends(get_connection)):
     if view.viewer_id == view.viewed_id:
         raise HTTPException(status_code=400, detail="Cannot view own profile")
     
-    # Inserir visualização
+    # Inserir visualização (ou atualizar se já existir)
     await conn.execute("""
-        INSERT INTO profile_views (viewer_id, viewed_id)
-        VALUES ($1, $2)
+        INSERT INTO profile_views (viewer_id, viewed_id, created_at)
+        VALUES ($1, $2, NOW())
+        ON CONFLICT (viewer_id, viewed_id) 
+        DO UPDATE SET created_at = NOW()
     """, view.viewer_id, view.viewed_id)
     
     # Buscar nome do visualizador para notificação

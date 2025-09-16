@@ -54,8 +54,18 @@ const ViewsList = ({ user }) => {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) {
+      return 'Data não disponível';
+    }
+    
     const date = new Date(dateString);
     const now = new Date();
+    
+    // Verificar se a data é válida
+    if (isNaN(date.getTime())) {
+      return 'Data inválida';
+    }
+    
     const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
     
     if (diffInHours < 1) {
@@ -64,7 +74,18 @@ const ViewsList = ({ user }) => {
       return `${diffInHours}h atrás`;
     } else {
       const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays}d atrás`;
+      if (diffInDays < 7) {
+        return `${diffInDays}d atrás`;
+      } else if (diffInDays < 30) {
+        const weeks = Math.floor(diffInDays / 7);
+        return `${weeks} semana${weeks > 1 ? 's' : ''} atrás`;
+      } else if (diffInDays < 365) {
+        const months = Math.floor(diffInDays / 30);
+        return `${months} mês${months > 1 ? 'es' : ''} atrás`;
+      } else {
+        const years = Math.floor(diffInDays / 365);
+        return `${years} ano${years > 1 ? 's' : ''} atrás`;
+      }
     }
   };
 
