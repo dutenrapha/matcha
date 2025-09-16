@@ -12,7 +12,7 @@ const OnlineStatusManager = ({ userId }) => {
     // Marcar como online quando o componente monta
     const markAsOnline = async () => {
       try {
-        await statusService.updateOnlineStatus(true);
+        await statusService.updateOnlineStatus({ is_online: true });
         setIsOnline(true);
         setLastSeen(new Date());
       } catch (error) {
@@ -25,7 +25,7 @@ const OnlineStatusManager = ({ userId }) => {
     // Atualizar status a cada 1 minuto para manter online
     const keepAliveInterval = setInterval(async () => {
       try {
-        await statusService.updateOnlineStatus(true);
+        await statusService.updateOnlineStatus({ is_online: true });
         setLastSeen(new Date());
       } catch (error) {
         console.error('Erro ao manter status online:', error);
@@ -35,7 +35,7 @@ const OnlineStatusManager = ({ userId }) => {
     // Marcar como offline quando a página for fechada
     const handleBeforeUnload = async () => {
       try {
-        await statusService.updateOnlineStatus(false);
+        await statusService.updateOnlineStatus({ is_online: false });
       } catch (error) {
         console.error('Erro ao marcar como offline:', error);
       }
@@ -45,14 +45,14 @@ const OnlineStatusManager = ({ userId }) => {
     const handleVisibilityChange = async () => {
       if (document.hidden) {
         try {
-          await statusService.updateOnlineStatus(false);
+          await statusService.updateOnlineStatus({ is_online: false });
           setIsOnline(false);
         } catch (error) {
           console.error('Erro ao marcar como offline:', error);
         }
       } else {
         try {
-          await statusService.updateOnlineStatus(true);
+          await statusService.updateOnlineStatus({ is_online: true });
           setIsOnline(true);
           setLastSeen(new Date());
         } catch (error) {

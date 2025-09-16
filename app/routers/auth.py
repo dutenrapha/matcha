@@ -1,12 +1,25 @@
 import uuid
 import datetime
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.responses import RedirectResponse
 from app.db import get_connection
-from app.schemas.auth import LoginIn, LoginOut, RequestResetIn, ResetPasswordIn, SessionOut
+from app.schemas.auth import (
+    LoginIn, LoginOut, RequestResetIn, ResetPasswordIn, SessionOut,
+    GoogleOAuthIn, OAuthLoginOut
+)
+from pydantic import BaseModel
+
+class GoogleCodeIn(BaseModel):
+    code: str
+    redirect_uri: str
 from app.utils.passwords import validate_password, hash_password, verify_password
 from app.utils.email import send_email
 from app.utils.jwt import create_access_token, verify_token, get_jti_from_token
+from app.utils.google_oauth import (
+    get_google_user_info, get_google_auth_url, 
+    exchange_code_for_token, GoogleOAuthError
+)
 from typing import Optional
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -278,3 +291,311 @@ async def logout(token: str = Depends(oauth2_scheme), conn=Depends(get_connectio
 async def get_current_user_info(current_user: dict = Depends(get_current_user)):
     """Obter informações do usuário atual"""
     return current_user
+
+# ==================== GOOGLE OAUTH ROUTES ====================
+
+@router.get("/google/login")
+async def google_login():
+    """
+    Inicia o processo de login com Google OAuth
+    Redireciona o usuário para a página de autorização do Google
+    """
+    try:
+        auth_url = get_google_auth_url()
+        return RedirectResponse(url=auth_url)
+    except GoogleOAuthError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Google OAuth configuration error: {str(e)}"
+        )
+
+@router.post("/google/callback")
+async def google_callback_post(data: GoogleCodeIn, conn=Depends(get_connection)):
+    """
+    Callback do Google OAuth via POST (para nova API)
+    Processa o código de autorização e faz login/cadastro do usuário
+    """
+    try:
+        # Trocar código por token
+        token_data = await exchange_code_for_token(data.code)
+        access_token = token_data.get("access_token")
+        
+        if not access_token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No access token received from Google"
+            )
+        
+        # Obter informações do usuário
+        google_user = await get_google_user_info(access_token)
+        
+        # Verificar se usuário já existe
+        existing_user = await conn.fetchrow(
+            "SELECT user_id, name, email, username, is_verified FROM users WHERE email = $1",
+            google_user.email
+        )
+        
+        is_new_user = False
+        
+        if existing_user:
+            # Usuário existe - fazer login
+            user_id = existing_user["user_id"]
+            
+            # Atualizar informações se necessário
+            if existing_user["name"] != google_user.name:
+                await conn.execute(
+                    "UPDATE users SET name = $1 WHERE user_id = $2",
+                    google_user.name, user_id
+                )
+            
+            # Marcar como verificado se não estiver
+            if not existing_user["is_verified"]:
+                await conn.execute(
+                    "UPDATE users SET is_verified = TRUE WHERE user_id = $1",
+                    user_id
+                )
+        else:
+            # Usuário não existe - criar novo
+            is_new_user = True
+            
+            # Gerar username único baseado no email
+            base_username = google_user.email.split("@")[0]
+            username = base_username
+            counter = 1
+            
+            while True:
+                existing_username = await conn.fetchrow(
+                    "SELECT user_id FROM users WHERE username = $1", username
+                )
+                if not existing_username:
+                    break
+                username = f"{base_username}{counter}"
+                counter += 1
+            
+            # Inserir novo usuário
+            result = await conn.fetchrow("""
+                INSERT INTO users (name, email, username, is_verified, created_at, last_login)
+                VALUES ($1, $2, $3, TRUE, NOW(), NOW())
+                RETURNING user_id
+            """, google_user.name, google_user.email, username)
+            
+            user_id = result["user_id"]
+        
+        # Atualizar last_login
+        await conn.execute(
+            "UPDATE users SET last_login = NOW() WHERE user_id = $1",
+            user_id
+        )
+        
+        # Criar token JWT
+        jwt_token, jti = create_access_token(data={"sub": user_id})
+        
+        # Retornar resposta
+        return {
+            "access_token": jwt_token,
+            "token_type": "bearer",
+            "user_id": user_id,
+            "is_new_user": is_new_user,
+            "message": "Login successful" if not is_new_user else "Account created and login successful"
+        }
+        
+    except GoogleOAuthError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Google OAuth error: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error: {str(e)}"
+        )
+
+@router.get("/google/callback")
+async def google_callback(code: str = Query(...), conn=Depends(get_connection)):
+    """
+    Callback do Google OAuth
+    Processa o código de autorização e faz login/cadastro do usuário
+    """
+    try:
+        # Trocar código por token
+        token_data = await exchange_code_for_token(code)
+        access_token = token_data.get("access_token")
+        
+        if not access_token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No access token received from Google"
+            )
+        
+        # Obter informações do usuário
+        google_user = await get_google_user_info(access_token)
+        
+        # Verificar se usuário já existe
+        existing_user = await conn.fetchrow(
+            "SELECT user_id, name, email, username, is_verified FROM users WHERE email = $1",
+            google_user.email
+        )
+        
+        is_new_user = False
+        
+        if existing_user:
+            # Usuário existe - fazer login
+            user_id = existing_user["user_id"]
+            
+            # Atualizar informações se necessário
+            if existing_user["name"] != google_user.name:
+                await conn.execute(
+                    "UPDATE users SET name = $1 WHERE user_id = $2",
+                    google_user.name, user_id
+                )
+            
+            # Marcar como verificado se não estiver
+            if not existing_user["is_verified"]:
+                await conn.execute(
+                    "UPDATE users SET is_verified = TRUE WHERE user_id = $1",
+                    user_id
+                )
+        else:
+            # Usuário não existe - criar novo
+            is_new_user = True
+            
+            # Gerar username único baseado no email
+            base_username = google_user.email.split("@")[0]
+            username = base_username
+            counter = 1
+            
+            while True:
+                existing_username = await conn.fetchrow(
+                    "SELECT user_id FROM users WHERE username = $1", username
+                )
+                if not existing_username:
+                    break
+                username = f"{base_username}{counter}"
+                counter += 1
+            
+            # Inserir novo usuário
+            result = await conn.fetchrow("""
+                INSERT INTO users (name, email, username, is_verified, created_at, last_login)
+                VALUES ($1, $2, $3, TRUE, NOW(), NOW())
+                RETURNING user_id
+            """, google_user.name, google_user.email, username)
+            
+            user_id = result["user_id"]
+        
+        # Atualizar last_login
+        await conn.execute(
+            "UPDATE users SET last_login = NOW() WHERE user_id = $1",
+            user_id
+        )
+        
+        # Criar token JWT
+        jwt_token, jti = create_access_token(data={"sub": user_id})
+        
+        # Retornar resposta
+        return {
+            "access_token": jwt_token,
+            "token_type": "bearer",
+            "user_id": user_id,
+            "is_new_user": is_new_user,
+            "message": "Login successful" if not is_new_user else "Account created and login successful"
+        }
+        
+    except GoogleOAuthError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Google OAuth error: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error: {str(e)}"
+        )
+
+@router.post("/google/token", response_model=OAuthLoginOut)
+async def google_token_login(data: GoogleOAuthIn, conn=Depends(get_connection)):
+    """
+    Login com Google usando access_token diretamente
+    Útil para frontend que já possui o token do Google
+    """
+    try:
+        # Obter informações do usuário
+        google_user = await get_google_user_info(data.access_token)
+        
+        # Verificar se usuário já existe
+        existing_user = await conn.fetchrow(
+            "SELECT user_id, name, email, username, is_verified FROM users WHERE email = $1",
+            google_user.email
+        )
+        
+        is_new_user = False
+        
+        if existing_user:
+            # Usuário existe - fazer login
+            user_id = existing_user["user_id"]
+            
+            # Atualizar informações se necessário
+            if existing_user["name"] != google_user.name:
+                await conn.execute(
+                    "UPDATE users SET name = $1 WHERE user_id = $2",
+                    google_user.name, user_id
+                )
+            
+            # Marcar como verificado se não estiver
+            if not existing_user["is_verified"]:
+                await conn.execute(
+                    "UPDATE users SET is_verified = TRUE WHERE user_id = $1",
+                    user_id
+                )
+        else:
+            # Usuário não existe - criar novo
+            is_new_user = True
+            
+            # Gerar username único baseado no email
+            base_username = google_user.email.split("@")[0]
+            username = base_username
+            counter = 1
+            
+            while True:
+                existing_username = await conn.fetchrow(
+                    "SELECT user_id FROM users WHERE username = $1", username
+                )
+                if not existing_username:
+                    break
+                username = f"{base_username}{counter}"
+                counter += 1
+            
+            # Inserir novo usuário
+            result = await conn.fetchrow("""
+                INSERT INTO users (name, email, username, is_verified, created_at, last_login)
+                VALUES ($1, $2, $3, TRUE, NOW(), NOW())
+                RETURNING user_id
+            """, google_user.name, google_user.email, username)
+            
+            user_id = result["user_id"]
+        
+        # Atualizar last_login
+        await conn.execute(
+            "UPDATE users SET last_login = NOW() WHERE user_id = $1",
+            user_id
+        )
+        
+        # Criar token JWT
+        jwt_token, jti = create_access_token(data={"sub": user_id})
+        
+        return {
+            "access_token": jwt_token,
+            "token_type": "bearer",
+            "user_id": user_id,
+            "is_new_user": is_new_user
+        }
+        
+    except GoogleOAuthError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Google OAuth error: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error: {str(e)}"
+        )

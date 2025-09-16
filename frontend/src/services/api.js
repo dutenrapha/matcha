@@ -100,6 +100,19 @@ export const authService = {
     });
     return response.data;
   },
+
+  // Login com Google OAuth
+  loginWithGoogle: async (accessToken) => {
+    const response = await api.post('/auth/google/token', {
+      access_token: accessToken
+    });
+    return response.data;
+  },
+
+  // Iniciar login com Google (redirecionamento)
+  initiateGoogleLogin: () => {
+    window.location.href = `${API_URL}/auth/google/login`;
+  },
 };
 
 // Serviços de usuário

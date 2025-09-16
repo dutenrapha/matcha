@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService, userService } from '../services/api';
+import googleAuthService from '../services/googleAuth';
 
 const AuthContext = createContext();
 
@@ -103,8 +104,48 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      // Fazer login com Google
+      const googleResult = await googleAuthService.signIn();
+      
+      if (!googleResult.success) {
+        return { success: false, error: googleResult.error };
+      }
+
+      // O googleAuthService.signIn() já retorna o JWT do sistema
+      const { access_token, user_id, is_new_user } = googleResult.data;
+
+      // Armazenar token no localStorage
+      localStorage.setItem('token', access_token);
+
+      // Obter dados completos do usuário
+      const userData = await authService.getCurrentUser();
+
+      // Armazenar dados do usuário
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      // Atualizar estado
+      setToken(access_token);
+      setUser(userData);
+
+      return { 
+        success: true, 
+        isNewUser: is_new_user,
+        message: is_new_user ? 'Conta criada com sucesso!' : 'Login realizado com sucesso!'
+      };
+    } catch (error) {
+      const message = error.response?.data?.detail || 'Erro no login com Google';
+      return { success: false, error: message };
+    }
+  };
+
   const logout = async () => {
     try {
+      // Logout do Google
+      await googleAuthService.signOut();
+      
+      // Logout do backend
       await authService.logout();
     } catch (error) {
       console.error('Erro no logout:', error);
@@ -130,6 +171,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     signup,
+    loginWithGoogle,
     logout,
     isAuthenticated,
   };

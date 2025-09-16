@@ -71,7 +71,7 @@ make populate    # Popular banco com dados de teste
 ```bash
 make install-backend   # Instalar dependências Python
 make install-frontend  # Instalar dependências Node.js
-make setup-env         # Configurar arquivo .env
+make setup-env         # Configurar arquivos .env (backend e frontend)
 ```
 
 2. **Configure o PostgreSQL:**
@@ -79,7 +79,17 @@ make setup-env         # Configurar arquivo .env
    - Crie o banco `tinder_clone`
    - Configure as credenciais no arquivo `.env`
 
-3. **Execute localmente:**
+3. **Configure o Google OAuth (opcional):**
+   - Acesse [Google Cloud Console](https://console.cloud.google.com/)
+   - Crie um projeto e ative a Google+ API
+   - Configure OAuth 2.0 com:
+     - **Authorized JavaScript origins**: `http://localhost:3000`
+     - **Authorized redirect URIs**: `http://localhost:8000/auth/google/callback`
+   - Copie o Client ID e configure nos arquivos `.env`:
+     - **Backend**: `GOOGLE_CLIENT_ID=seu-client-id`
+     - **Frontend**: `REACT_APP_GOOGLE_CLIENT_ID=seu-client-id`
+
+4. **Execute localmente:**
 ```bash
 make run-backend   # Backend na porta 8000
 make run-frontend  # Frontend na porta 3000
@@ -148,7 +158,7 @@ make clean           # Limpar cache e arquivos temporários
 make help            # Mostrar ajuda completa
 make install-backend # Instalar dependências do backend
 make install-frontend# Instalar dependências do frontend
-make setup-env       # Configurar arquivo .env
+make setup-env       # Configurar arquivos .env (backend e frontend)
 ```
 
 ### 📖 Ajuda

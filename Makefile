@@ -39,7 +39,8 @@ setup-env:
 	@if [ ! -f .env ]; then \
 		cp env.example .env; \
 		echo "📝 Arquivo .env criado a partir do env.example"; \
-		echo "⚠️  Edite o arquivo .env conforme necessário"; \
+		echo "⚠️  Edite o arquivo .env com suas credenciais reais"; \
+		echo "🔧 Configure as variáveis do Google OAuth e outras credenciais"; \
 	else \
 		echo "✅ Arquivo .env já existe"; \
 	fi
@@ -211,7 +212,7 @@ help:
 	@echo "  make setup           - Setup completo do projeto"
 	@echo "  make install-backend - Instalar dependências do backend"
 	@echo "  make install-frontend- Instalar dependências do frontend"
-	@echo "  make setup-env       - Configurar arquivo .env"
+	@echo "  make setup-env       - Configurar arquivo .env (inclui Google OAuth)"
 	@echo ""
 	@echo "🐳 DOCKER:"
 	@echo "  make up              - Subir containers"
