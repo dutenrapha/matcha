@@ -239,7 +239,13 @@ export const swipeService = {
 
   // Obter likes recebidos
   getLikesReceived: async (userId) => {
-    const response = await api.get(`/swipes/likes-received/${userId}`);
+    const response = await api.get(`/swipes/${userId}/likes`);
+    return response.data;
+  },
+
+  // Obter contagem de likes recebidos
+  getLikesReceivedCount: async (userId) => {
+    const response = await api.get(`/swipes/${userId}/likes/count`);
     return response.data;
   },
 

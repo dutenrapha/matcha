@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { NotificationProvider } from '../context/NotificationContext';
+import { profileService, swipeService, matchesService, viewService } from '../services/api';
 import ProfileEdit from './ProfileEdit';
 import DiscoverProfiles from './DiscoverProfiles';
 import AdvancedSearch from './AdvancedSearch';
@@ -17,34 +18,84 @@ import InteractiveMap from './InteractiveMap';
 import './Dashboard.css';
 
 // Componentes das seções (placeholder por enquanto)
-const HomeSection = ({ user }) => (
-  <div className="section-content">
-    <h2>🏠 Dashboard</h2>
-    <p>Bem-vindo ao Matcha! Aqui você pode ver um resumo da sua atividade.</p>
-    
-    {/* Status Online Manager */}
-    {user && <OnlineStatusManager userId={user.user_id} />}
-    
-    <div className="stats-grid">
-      <div className="stat-card">
-        <h3>Fame Rating</h3>
-        <p className="stat-value">0</p>
-      </div>
-      <div className="stat-card">
-        <h3>Visualizações</h3>
-        <p className="stat-value">0</p>
-      </div>
-      <div className="stat-card">
-        <h3>Likes Recebidos</h3>
-        <p className="stat-value">0</p>
-      </div>
-      <div className="stat-card">
-        <h3>Matches</h3>
-        <p className="stat-value">0</p>
+const HomeSection = ({ user }) => {
+  const [stats, setStats] = useState({
+    fameRating: 0,
+    views: 0,
+    likesReceived: 0,
+    matches: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      if (!user?.user_id) return;
+
+      try {
+        setLoading(true);
+        
+        // Buscar todas as estatísticas em paralelo
+        const [profileData, viewsData, likesData, matchesData] = await Promise.all([
+          profileService.getProfile(user.user_id),
+          viewService.getViewCount(user.user_id),
+          swipeService.getLikesReceivedCount(user.user_id),
+          matchesService.getMatchCount(user.user_id)
+        ]);
+
+        setStats({
+          fameRating: profileData.fame_rating || 0,
+          views: viewsData.views_received || 0,
+          likesReceived: likesData.total_likes || 0,
+          matches: matchesData.match_count || 0
+        });
+      } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
+        // Manter valores padrão em caso de erro
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStats();
+  }, [user?.user_id]);
+
+  return (
+    <div className="section-content">
+      <h2>🏠 Dashboard</h2>
+      <p>Bem-vindo ao Matcha! Aqui você pode ver um resumo da sua atividade.</p>
+      
+      {/* Status Online Manager */}
+      {user && <OnlineStatusManager userId={user.user_id} />}
+      
+      <div className="stats-grid">
+        <div className="stat-card">
+          <h3>Fame Rating</h3>
+          <p className="stat-value">
+            {loading ? '...' : stats.fameRating}
+          </p>
+        </div>
+        <div className="stat-card">
+          <h3>Visualizações</h3>
+          <p className="stat-value">
+            {loading ? '...' : stats.views}
+          </p>
+        </div>
+        <div className="stat-card">
+          <h3>Likes Recebidos</h3>
+          <p className="stat-value">
+            {loading ? '...' : stats.likesReceived}
+          </p>
+        </div>
+        <div className="stat-card">
+          <h3>Matches</h3>
+          <p className="stat-value">
+            {loading ? '...' : stats.matches}
+          </p>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ProfileSection = () => (
   <div className="section-content">

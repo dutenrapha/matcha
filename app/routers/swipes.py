@@ -120,6 +120,16 @@ async def get_likes_received(user_id: int, conn=Depends(get_connection)):
     
     return [dict(r) for r in rows]
 
+@router.get("/{user_id}/likes/count", response_model=dict)
+async def get_likes_received_count(user_id: int, conn=Depends(get_connection)):
+    """Obter contagem de likes recebidos pelo usuário"""
+    count = await conn.fetchval("""
+        SELECT COUNT(*) FROM swipes 
+        WHERE swiped_id = $1 AND direction = 'like'
+    """, user_id)
+    
+    return {"user_id": user_id, "total_likes": count}
+
 @router.get("/{user_id}/given", response_model=list)
 async def get_swipes_given(user_id: int, conn=Depends(get_connection)):
     """Obter swipes dados pelo usuário"""
