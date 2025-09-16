@@ -148,6 +148,12 @@ export const profileService = {
     const response = await api.get(`/profiles/discover/${userId}?limit=${limit}`);
     return response.data;
   },
+
+  // Verificar status do perfil
+  getProfileStatus: async (userId) => {
+    const response = await api.get(`/profiles/${userId}/status`);
+    return response.data;
+  },
 };
 
 // Serviços de preferências

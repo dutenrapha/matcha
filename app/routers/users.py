@@ -57,7 +57,16 @@ async def advanced_search(
         current_user_id
     )
     if not profile:
-        raise HTTPException(status_code=404, detail="User profile not found")
+        raise HTTPException(
+            status_code=400, 
+            detail="Profile not found. Please complete your profile first."
+        )
+    
+    if profile["latitude"] is None or profile["longitude"] is None:
+        raise HTTPException(
+            status_code=400, 
+            detail="Location not set. Please update your profile with your location."
+        )
 
     lat, lon = profile["latitude"], profile["longitude"]
 
@@ -215,7 +224,32 @@ async def top_fame_nearby(user_id: int, conn=Depends(get_connection)):
     """, user_id)
     
     if not prefs:
-        raise HTTPException(status_code=404, detail="User preferences not found")
+        # Verificar se tem perfil
+        profile = await conn.fetchrow("""
+            SELECT latitude, longitude FROM profiles WHERE user_id = $1
+        """, user_id)
+        
+        if not profile:
+            raise HTTPException(
+                status_code=400, 
+                detail="Profile not found. Please complete your profile first."
+            )
+        
+        if profile['latitude'] is None or profile['longitude'] is None:
+            raise HTTPException(
+                status_code=400, 
+                detail="Location not set. Please update your profile with your location."
+            )
+        
+        # Usar preferências padrão
+        prefs = {
+            'preferred_gender': 'both',
+            'age_min': 18,
+            'age_max': 50,
+            'max_distance_km': 50,
+            'latitude': profile['latitude'],
+            'longitude': profile['longitude']
+        }
     
     lat, lon = prefs["latitude"], prefs["longitude"]
     preferred_gender = prefs["preferred_gender"]

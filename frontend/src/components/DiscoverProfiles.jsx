@@ -16,6 +16,7 @@ const DiscoverProfiles = () => {
   const [isSwiping, setIsSwiping] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isProfileDetailOpen, setIsProfileDetailOpen] = useState(false);
+  const [profileStatus, setProfileStatus] = useState(null);
 
   const loadProfiles = useCallback(async () => {
     try {
@@ -28,7 +29,11 @@ const DiscoverProfiles = () => {
       
     } catch (err) {
       console.error('Erro ao carregar perfis:', err);
-      setError('Erro ao carregar perfis sugeridos');
+      if (err.response?.status === 400) {
+        setError(err.response.data.detail || 'Erro ao carregar perfis sugeridos');
+      } else {
+        setError('Erro ao carregar perfis sugeridos');
+      }
     } finally {
       setLoading(false);
     }
@@ -43,13 +48,51 @@ const DiscoverProfiles = () => {
     }
   }, [user?.user_id]);
 
-  // Carregar perfis sugeridos
+  const checkProfileStatus = useCallback(async () => {
+    try {
+      setLoading(true);
+      const status = await profileService.getProfileStatus(user.user_id);
+      setProfileStatus(status);
+      
+      // Só carregar perfis se o perfil estiver completo
+      if (status.is_complete) {
+        // Chamar loadProfiles diretamente para evitar dependência circular
+        try {
+          setError('');
+          
+          const profilesData = await profileService.discoverProfiles(user.user_id, 20);
+          setProfiles(profilesData);
+          setCurrentIndex(0);
+        } catch (err) {
+          console.error('Erro ao carregar perfis:', err);
+          if (err.response?.status === 400) {
+            setError(err.response.data.detail || 'Erro ao carregar perfis sugeridos');
+          } else {
+            setError('Erro ao carregar perfis sugeridos');
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Erro ao verificar status do perfil:', err);
+      // Se houver erro, assumir que o perfil não está completo
+      setProfileStatus({
+        has_profile: false,
+        is_complete: false,
+        missing_fields: ['profile'],
+        message: 'Erro ao verificar perfil. Tente novamente.'
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.user_id]);
+
+  // Carregar dados iniciais
   useEffect(() => {
     if (user?.user_id) {
-      loadProfiles();
       loadUserTags();
+      checkProfileStatus();
     }
-  }, [user?.user_id, loadProfiles, loadUserTags]);
+  }, [user?.user_id, loadUserTags, checkProfileStatus]);
 
   const handleNextProfile = () => {
     if (currentIndex < profiles.length - 1) {
@@ -62,7 +105,11 @@ const DiscoverProfiles = () => {
 
 
   const handleRefresh = () => {
-    loadProfiles();
+    if (profileStatus?.is_complete) {
+      loadProfiles();
+    } else {
+      checkProfileStatus();
+    }
   };
 
   const handleViewProfile = (profile) => {
@@ -129,6 +176,27 @@ const DiscoverProfiles = () => {
         <button onClick={handleRefresh} className="btn btn-primary">
           🔄 Tentar Novamente
         </button>
+      </div>
+    );
+  }
+
+  // Se o perfil não está completo, mostrar mensagem específica
+  if (profileStatus && !profileStatus.is_complete) {
+    return (
+      <div className="discover-profiles">
+        <div className="discover-header">
+          <h2>🔍 Descobrir</h2>
+          <p>Encontre pessoas interessantes baseado nas suas preferências</p>
+          
+          <div className="profile-status-warning">
+            <div className="warning-icon">⚠️</div>
+            <div className="warning-content">
+              <h4>Perfil Incompleto</h4>
+              <p>{profileStatus.message}</p>
+              <p>Complete seu perfil para descobrir pessoas.</p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

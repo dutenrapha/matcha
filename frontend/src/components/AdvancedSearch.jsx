@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { searchService, tagsService, swipeService } from '../services/api';
+import { searchService, tagsService, swipeService, profileService } from '../services/api';
 import SwipeCard from './SwipeCard';
 import ProfileDetail from './ProfileDetail';
 import './AdvancedSearch.css';
@@ -16,6 +16,7 @@ const AdvancedSearch = () => {
   const [isSwiping, setIsSwiping] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [isProfileDetailOpen, setIsProfileDetailOpen] = useState(false);
+  const [profileStatus, setProfileStatus] = useState(null);
 
   // Filtros de busca
   const [filters, setFilters] = useState({
@@ -46,8 +47,18 @@ const AdvancedSearch = () => {
   useEffect(() => {
     if (user?.user_id) {
       loadUserTags();
+      checkProfileStatus();
     }
   }, [user?.user_id, loadUserTags]);
+
+  const checkProfileStatus = useCallback(async () => {
+    try {
+      const status = await profileService.getProfileStatus(user.user_id);
+      setProfileStatus(status);
+    } catch (err) {
+      console.error('Erro ao verificar status do perfil:', err);
+    }
+  }, [user?.user_id]);
 
   // Buscar tags
   const searchTags = async (query) => {
@@ -67,6 +78,12 @@ const AdvancedSearch = () => {
   // Executar busca
   const performSearch = async () => {
     if (!user?.user_id) return;
+
+    // Verificar se o perfil está completo
+    if (!profileStatus?.is_complete) {
+      setError('Perfil incompleto. Complete seu perfil antes de fazer buscas.');
+      return;
+    }
 
     try {
       setLoading(true);
@@ -88,7 +105,11 @@ const AdvancedSearch = () => {
       setCurrentIndex(0);
     } catch (err) {
       console.error('Erro na busca:', err);
-      setError('Erro ao realizar busca');
+      if (err.response?.status === 400) {
+        setError(err.response.data.detail || 'Erro ao realizar busca');
+      } else {
+        setError('Erro ao realizar busca');
+      }
     } finally {
       setLoading(false);
     }
@@ -196,6 +217,18 @@ const AdvancedSearch = () => {
         <h2>🔍 Busca Avançada</h2>
         <p>Encontre pessoas com base em critérios específicos</p>
       </div>
+
+      {/* Status do Perfil */}
+      {profileStatus && !profileStatus.is_complete && (
+        <div className="profile-status-warning">
+          <div className="warning-icon">⚠️</div>
+          <div className="warning-content">
+            <h4>Perfil Incompleto</h4>
+            <p>{profileStatus.message}</p>
+            <p>Complete seu perfil para usar a busca avançada.</p>
+          </div>
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="search-filters">

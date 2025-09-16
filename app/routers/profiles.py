@@ -55,6 +55,58 @@ async def get_profile(user_id: int, conn=Depends(get_connection)):
     
     return dict(profile)
 
+@router.get("/{user_id}/status", response_model=dict)
+async def get_profile_status(user_id: int, conn=Depends(get_connection)):
+    """Verificar status do perfil do usuário"""
+    # Verificar se perfil existe
+    profile = await conn.fetchrow("""
+        SELECT user_id, bio, age, gender, sexual_pref, location, latitude, longitude, avatar_url
+        FROM profiles WHERE user_id = $1
+    """, user_id)
+    
+    if not profile:
+        return {
+            "has_profile": False,
+            "is_complete": False,
+            "missing_fields": ["profile"],
+            "message": "Profile not found. Please create your profile."
+        }
+    
+    # Verificar campos obrigatórios
+    missing_fields = []
+    if not profile["bio"]:
+        missing_fields.append("bio")
+    if not profile["age"]:
+        missing_fields.append("age")
+    if not profile["gender"]:
+        missing_fields.append("gender")
+    if not profile["sexual_pref"]:
+        missing_fields.append("sexual_pref")
+    if not profile["location"]:
+        missing_fields.append("location")
+    if profile["latitude"] is None or profile["longitude"] is None:
+        missing_fields.append("location")
+    if not profile["avatar_url"]:
+        missing_fields.append("avatar_url")
+    
+    # Verificar se tem preferências
+    preferences = await conn.fetchrow("""
+        SELECT preferred_gender, age_min, age_max, max_distance_km
+        FROM preferences WHERE user_id = $1
+    """, user_id)
+    
+    if not preferences:
+        missing_fields.append("preferences")
+    
+    is_complete = len(missing_fields) == 0
+    
+    return {
+        "has_profile": True,
+        "is_complete": is_complete,
+        "missing_fields": missing_fields,
+        "message": "Profile complete" if is_complete else f"Profile incomplete. Missing: {', '.join(missing_fields)}"
+    }
+
 @router.put("/{user_id}", response_model=dict)
 async def update_profile(user_id: int, profile_update: ProfileUpdate, conn=Depends(get_connection)):
     """Atualizar perfil"""
@@ -113,13 +165,22 @@ async def discover_profiles(user_id: int, limit: int = 10, conn=Depends(get_conn
     """, user_id)
     
     if not prefs:
-        # Se não tem preferências, usar valores padrão
+        # Se não tem preferências, verificar se tem perfil
         profile = await conn.fetchrow("""
             SELECT latitude, longitude FROM profiles WHERE user_id = $1
         """, user_id)
         
-        if not profile or profile['latitude'] is None or profile['longitude'] is None:
-            raise HTTPException(status_code=400, detail="User location not set. Please update your profile with location.")
+        if not profile:
+            raise HTTPException(
+                status_code=400, 
+                detail="Profile not found. Please complete your profile first."
+            )
+        
+        if profile['latitude'] is None or profile['longitude'] is None:
+            raise HTTPException(
+                status_code=400, 
+                detail="Location not set. Please update your profile with your location."
+            )
         
         # Usar preferências padrão
         prefs = {

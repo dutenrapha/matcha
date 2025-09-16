@@ -21,6 +21,41 @@
   font-size: 1.1rem;
 }
 
+/* Profile Status Warning */
+.profile-status-warning {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.warning-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.warning-content h4 {
+  margin: 0 0 8px 0;
+  color: #92400e;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.warning-content p {
+  margin: 0 0 5px 0;
+  color: #92400e;
+  font-size: 0.95rem;
+}
+
+.warning-content p:last-child {
+  margin-bottom: 0;
+  font-weight: 500;
+}
+
 /* Filtros */
 .search-filters {
   background: white;
