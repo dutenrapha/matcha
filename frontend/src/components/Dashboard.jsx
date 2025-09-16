@@ -11,6 +11,7 @@ import BlockedUsers from './BlockedUsers';
 import ReportsList from './ReportsList';
 import ViewsList from './ViewsList';
 import OnlineStatusManager from './OnlineStatusManager';
+import Settings from './Settings';
 import './Dashboard.css';
 
 // Componentes das seções (placeholder por enquanto)
@@ -99,11 +100,7 @@ const ViewsSection = ({ user }) => (
 
 const SettingsSection = () => (
   <div className="section-content">
-    <h2>⚙️ Configurações</h2>
-    <p>Gerencie suas configurações de privacidade e bloqueios.</p>
-    <div className="placeholder-content">
-      <p>🚧 Funcionalidade em desenvolvimento...</p>
-    </div>
+    <Settings />
   </div>
 );
 

@@ -121,6 +121,12 @@ export const userService = {
     const response = await api.put(`/users/${userId}`, userData);
     return response.data;
   },
+
+  // Atualizar preferências
+  updatePreferences: async (userId, preferencesData) => {
+    const response = await api.put(`/preferences/${userId}`, preferencesData);
+    return response.data;
+  },
 };
 
 // Serviços de perfil
@@ -583,10 +589,8 @@ export const viewService = {
 // Serviços de status online
 export const statusService = {
   // Atualizar status online do usuário
-  updateOnlineStatus: async (isOnline) => {
-    const response = await api.put('/status/online', {
-      is_online: isOnline
-    });
+  updateOnlineStatus: async (statusData) => {
+    const response = await api.put('/status/online', statusData);
     return response.data;
   },
 
