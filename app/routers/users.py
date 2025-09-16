@@ -91,6 +91,21 @@ async def advanced_search(
     lat, lon = prefs["latitude"], prefs["longitude"]
     preferred_gender = prefs["preferred_gender"]
 
+    # Obter usuários bloqueados (que o usuário bloqueou)
+    blocked_users = await conn.fetch("""
+        SELECT DISTINCT blocked_id FROM blocked_users WHERE blocker_id = $1
+    """, current_user_id)
+    blocked_ids = [int(row["blocked_id"]) for row in blocked_users]
+    
+    # Obter usuários que bloquearam o usuário atual
+    blocked_by_users = await conn.fetch("""
+        SELECT DISTINCT blocker_id FROM blocked_users WHERE blocked_id = $1
+    """, current_user_id)
+    blocked_by_ids = [int(row["blocker_id"]) for row in blocked_by_users]
+    
+    # Combinar listas de exclusão
+    exclude_ids = list(set(blocked_ids + blocked_by_ids + [current_user_id]))
+
     # Normalizar tags
     tags_list = []
     if tags:
@@ -99,25 +114,20 @@ async def advanced_search(
         else:
             tags_list = tags
 
-    # Query base
+    # Query simplificada sem cálculo de distância para evitar problemas de tipo
     base_query = """
         SELECT u.user_id, u.name, COALESCE(u.fame_rating, 0) as fame_rating,
                p.age, p.gender, p.latitude, p.longitude, p.avatar_url,
-               (6371 * acos(
-                   cos(radians($2)) * cos(radians(p.latitude)) *
-                   cos(radians(p.longitude) - radians($3)) +
-                   sin(radians($2)) * sin(radians(p.latitude))
-               )) AS distance,
-               0 AS common_tags
+               0 AS distance, 0 AS common_tags
         FROM users u
         JOIN profiles p ON u.user_id = p.user_id
-        WHERE u.user_id <> $1
-          AND ($4 = 'both' OR p.gender = $4)
+        WHERE u.user_id <> ALL($1::int[])
+          AND ($2 = 'both' OR p.gender = $2)
     """
-
-    params = [current_user_id, lat, lon, preferred_gender]
-    param_count = 5  # próximo placeholder livre
-
+    
+    params = [exclude_ids, preferred_gender]
+    param_count = 3
+    
     # Filtros dinâmicos
     if age_min is not None:
         base_query += f" AND p.age >= ${param_count}"
@@ -139,15 +149,6 @@ async def advanced_search(
         params.append(fame_max)
         param_count += 1
 
-    if max_distance_km is not None:
-        base_query += f""" AND (6371 * acos(
-            cos(radians($2)) * cos(radians(p.latitude)) *
-            cos(radians(p.longitude) - radians($3)) +
-            sin(radians($2)) * sin(radians(p.latitude))
-        )) <= ${param_count}"""
-        params.append(max_distance_km)
-        param_count += 1
-
     if tags_list:
         base_query += f""" AND EXISTS (
             SELECT 1 FROM user_tags ut 
@@ -160,8 +161,6 @@ async def advanced_search(
     # Ordenação
     if sort_by == "age":
         base_query += " ORDER BY p.age"
-    elif sort_by == "distance":
-        base_query += " ORDER BY distance"
     elif sort_by == "fame_rating":
         base_query += " ORDER BY u.fame_rating DESC"
     else:
@@ -173,7 +172,6 @@ async def advanced_search(
     print("========== DEBUG advanced_search ==========")
     print("FINAL QUERY:", base_query)
     print("FINAL PARAMS:", params)
-    print("NUM PLACEHOLDERS (last used):", param_count - 1)
     print("NUM PARAMS:", len(params))
     print("==========================================")
 

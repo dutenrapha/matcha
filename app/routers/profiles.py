@@ -215,8 +215,20 @@ async def discover_profiles(user_id: int, limit: int = 10, conn=Depends(get_conn
     """, user_id)
     swiped_ids = [int(row["swiped_id"]) for row in swiped_users]
     
+    # Obter usuários bloqueados (que o usuário bloqueou)
+    blocked_users = await conn.fetch("""
+        SELECT DISTINCT blocked_id FROM blocked_users WHERE blocker_id = $1
+    """, user_id)
+    blocked_ids = [int(row["blocked_id"]) for row in blocked_users]
+    
+    # Obter usuários que bloquearam o usuário atual
+    blocked_by_users = await conn.fetch("""
+        SELECT DISTINCT blocker_id FROM blocked_users WHERE blocked_id = $1
+    """, user_id)
+    blocked_by_ids = [int(row["blocker_id"]) for row in blocked_by_users]
+    
     # Combinar listas de exclusão
-    exclude_ids = list(set(viewed_ids + swiped_ids + [user_id]))
+    exclude_ids = list(set(viewed_ids + swiped_ids + blocked_ids + blocked_by_ids + [user_id]))
     
     # Se não há IDs para excluir, usar uma lista com o próprio usuário
     if not exclude_ids:
