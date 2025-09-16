@@ -1,9 +1,9 @@
 import React from 'react';
-import { useNotifications } from '../hooks/useNotifications';
+import { useNotificationContext } from '../context/NotificationContext';
 import './NotificationIndicator.css';
 
-const NotificationIndicator = ({ userId, onClick }) => {
-  const { unreadCount } = useNotifications(userId);
+const NotificationIndicator = ({ onClick }) => {
+  const { unreadCount } = useNotificationContext();
 
   return (
     <div 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { NotificationProvider } from '../context/NotificationContext';
 import ProfileEdit from './ProfileEdit';
 import DiscoverProfiles from './DiscoverProfiles';
 import AdvancedSearch from './AdvancedSearch';
@@ -134,77 +135,78 @@ const Dashboard = () => {
   const ActiveComponent = navigationItems.find(item => item.id === activeSection)?.component || HomeSection;
 
   return (
-    <div className="dashboard-layout">
-      {/* Header */}
-      <header className="dashboard-header">
-        <div className="header-left">
-          <button 
-            className="menu-toggle"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            aria-label="Toggle menu"
-          >
-            ☰
-          </button>
-          <h1 className="app-title">Matcha</h1>
-        </div>
-        
-        <div className="header-right">
-          <NotificationIndicator 
-            userId={user?.user_id}
-            onClick={() => setActiveSection('notifications')}
-          />
-          <div className="user-menu">
-            <div className="user-avatar-small">
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-            </div>
-            <span className="user-name">{user?.name || 'Usuário'}</span>
-            <button className="logout-btn" onClick={handleLogout}>
-              🚪
+    <NotificationProvider userId={user?.user_id}>
+      <div className="dashboard-layout">
+        {/* Header */}
+        <header className="dashboard-header">
+          <div className="header-left">
+            <button 
+              className="menu-toggle"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              aria-label="Toggle menu"
+            >
+              ☰
             </button>
+            <h1 className="app-title">Matcha</h1>
           </div>
-        </div>
-      </header>
-
-      <div className="dashboard-body">
-        {/* Sidebar */}
-        <aside className={`dashboard-sidebar ${sidebarOpen ? 'open' : ''}`}>
-          <nav className="sidebar-nav">
-            {navigationItems.map((item) => (
-              <button
-                key={item.id}
-                className={`nav-item ${activeSection === item.id ? 'active' : ''}`}
-                onClick={() => {
-                  setActiveSection(item.id);
-                  setSidebarOpen(false); // Fechar sidebar no mobile após seleção
-                }}
-              >
-                <span className="nav-icon">{item.icon}</span>
-                <span className="nav-label">{item.label}</span>
+          
+          <div className="header-right">
+            <NotificationIndicator 
+              onClick={() => setActiveSection('notifications')}
+            />
+            <div className="user-menu">
+              <div className="user-avatar-small">
+                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+              <span className="user-name">{user?.name || 'Usuário'}</span>
+              <button className="logout-btn" onClick={handleLogout}>
+                🚪
               </button>
-            ))}
-          </nav>
-        </aside>
+            </div>
+          </div>
+        </header>
 
-        {/* Overlay para mobile */}
-        {sidebarOpen && (
-          <div 
-            className="sidebar-overlay"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
+        <div className="dashboard-body">
+          {/* Sidebar */}
+          <aside className={`dashboard-sidebar ${sidebarOpen ? 'open' : ''}`}>
+            <nav className="sidebar-nav">
+              {navigationItems.map((item) => (
+                <button
+                  key={item.id}
+                  className={`nav-item ${activeSection === item.id ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveSection(item.id);
+                    setSidebarOpen(false); // Fechar sidebar no mobile após seleção
+                  }}
+                >
+                  <span className="nav-icon">{item.icon}</span>
+                  <span className="nav-label">{item.label}</span>
+                </button>
+              ))}
+            </nav>
+          </aside>
 
-        {/* Main Content */}
-        <main className="dashboard-main">
-          {activeSection === 'home' ? (
-            <ActiveComponent user={user} onNavigateToChat={handleNavigateToChat} />
-          ) : activeSection === 'views' ? (
-            <ActiveComponent user={user} onNavigateToChat={handleNavigateToChat} />
-          ) : (
-            <ActiveComponent onNavigateToChat={handleNavigateToChat} />
+          {/* Overlay para mobile */}
+          {sidebarOpen && (
+            <div 
+              className="sidebar-overlay"
+              onClick={() => setSidebarOpen(false)}
+            />
           )}
-        </main>
+
+          {/* Main Content */}
+          <main className="dashboard-main">
+            {activeSection === 'home' ? (
+              <ActiveComponent user={user} onNavigateToChat={handleNavigateToChat} />
+            ) : activeSection === 'views' ? (
+              <ActiveComponent user={user} onNavigateToChat={handleNavigateToChat} />
+            ) : (
+              <ActiveComponent onNavigateToChat={handleNavigateToChat} />
+            )}
+          </main>
+        </div>
       </div>
-    </div>
+    </NotificationProvider>
   );
 };
 

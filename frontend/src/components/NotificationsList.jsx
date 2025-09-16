@@ -1,10 +1,8 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNotifications } from '../hooks/useNotifications';
+import { useNotificationContext } from '../context/NotificationContext';
 import './NotificationsList.css';
 
 const NotificationsList = () => {
-  const { user } = useAuth();
   const {
     notifications,
     unreadCount,
@@ -15,7 +13,7 @@ const NotificationsList = () => {
     deleteNotification,
     deleteAllNotifications,
     loadNotifications
-  } = useNotifications(user?.user_id);
+  } = useNotificationContext();
 
   const handleMarkAsRead = (notificationId) => {
     markAsRead(notificationId);
