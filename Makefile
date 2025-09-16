@@ -97,6 +97,12 @@ populate:
 	$(DOCKER_COMPOSE) run --rm $(API_SERVICE) python scripts/populate.py
 	@echo "✅ Banco populado com sucesso!"
 
+# Adicionar usuários específicos (Bob, Alice, Carol)
+add-users:
+	@echo "👤 Adicionando usuários específicos..."
+	$(DOCKER_COMPOSE) exec $(API_SERVICE) python scripts/add_specific_users.py
+	@echo "✅ Usuários específicos adicionados!"
+
 # Resetar ambiente: limpar DB, recriar, aplicar migrations e popular
 reset:
 	@echo "🔄 Resetando ambiente completo..."
@@ -216,6 +222,7 @@ help:
 	@echo "🗄️  BANCO DE DADOS:"
 	@echo "  make migrate         - Aplicar migrations"
 	@echo "  make populate        - Popular banco com dados de teste"
+	@echo "  make add-users       - Adicionar usuários específicos (Bob, Alice, Carol)"
 	@echo "  make reset           - Reset completo do ambiente"
 	@echo "  make psql            - Acessar banco PostgreSQL"
 	@echo ""

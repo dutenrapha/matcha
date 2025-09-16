@@ -50,13 +50,37 @@ async def populate_users(n=500):
         
         for i in range(n):
             # Dados do usuário
-            name = faker.first_name()
+            gender = random.choice(["male", "female"])
+            # Usar nomes apropriados para o gênero
+            if gender == "male":
+                name = faker.first_name_male()
+            else:
+                name = faker.first_name_female()
+            
+            # Criar username baseado no nome
+            username = f"{name.lower()}{i}{random.randint(100, 999)}"
             email = f"{name.lower()}{i}{random.randint(1000, 9999)}@example.com"
             password_hash = hash_password("TestPass123!")
             age = random.randint(18, 50)
-            gender = random.choice(["male", "female"])
             sexual_pref = random.choice(["male", "female", "both"])
-            bio = faker.sentence(nb_words=8)
+            
+            # Criar bio mais apropriada ao gênero
+            if gender == "male":
+                bio_templates = [
+                    f"Olá! Sou {name}, gosto de esportes e tecnologia. Procuro alguém especial para compartilhar bons momentos.",
+                    f"Oi! Meu nome é {name}, adoro música e viagens. Estou procurando uma pessoa interessante para conhecer.",
+                    f"Hey! Sou {name}, gosto de aventuras e boa conversa. Vamos nos conhecer?",
+                    f"Olá! Sou {name}, apaixonado por fotografia e natureza. Procuro alguém para explorar o mundo juntos."
+                ]
+            else:
+                bio_templates = [
+                    f"Oi! Sou {name}, adoro arte e música. Estou procurando alguém especial para compartilhar momentos únicos.",
+                    f"Olá! Meu nome é {name}, gosto de dança e viagens. Vamos nos conhecer?",
+                    f"Hey! Sou {name}, apaixonada por livros e café. Procuro uma pessoa interessante para conversar.",
+                    f"Oi! Sou {name}, adoro yoga e natureza. Estou procurando alguém para explorar a vida juntos."
+                ]
+            
+            bio = random.choice(bio_templates)
             fame_rating = random.randint(0, 100)
             
             # Fotos
@@ -72,10 +96,10 @@ async def populate_users(n=500):
             
             # Inserir usuário
             user_id = await conn.fetchval("""
-                INSERT INTO users (name, email, password_hash, fame_rating, is_verified)
-                VALUES ($1, $2, $3, $4, TRUE)
+                INSERT INTO users (name, email, username, password_hash, fame_rating, is_verified)
+                VALUES ($1, $2, $3, $4, $5, TRUE)
                 RETURNING user_id
-            """, name, email, password_hash, fame_rating)
+            """, name, email, username, password_hash, fame_rating)
             
             # Inserir perfil
             await conn.execute("""
