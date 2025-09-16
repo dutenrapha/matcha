@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { userService, statusService } from '../services/api';
+import MapPrivacySettings from './MapPrivacySettings';
 import './Settings.css';
 
 const Settings = () => {
@@ -177,6 +178,11 @@ const Settings = () => {
               {loading ? 'Salvando...' : 'Salvar Configurações'}
             </button>
           </form>
+        </div>
+
+        {/* Map Privacy Settings */}
+        <div className="settings-section">
+          <MapPrivacySettings />
         </div>
       </div>
     </div>

@@ -13,6 +13,7 @@ import ReportsList from './ReportsList';
 import ViewsList from './ViewsList';
 import OnlineStatusManager from './OnlineStatusManager';
 import Settings from './Settings';
+import InteractiveMap from './InteractiveMap';
 import './Dashboard.css';
 
 // Componentes das seções (placeholder por enquanto)
@@ -105,6 +106,12 @@ const SettingsSection = () => (
   </div>
 );
 
+const MapSection = () => (
+  <div className="section-content map-section">
+    <InteractiveMap />
+  </div>
+);
+
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const [activeSection, setActiveSection] = useState('home');
@@ -123,6 +130,7 @@ const Dashboard = () => {
     { id: 'profile', label: 'Meu Perfil', icon: '👤', component: ProfileSection },
     { id: 'discover', label: 'Descobrir', icon: '🔍', component: DiscoverSection },
     { id: 'search', label: 'Busca', icon: '🔎', component: SearchSection },
+    { id: 'map', label: 'Mapa', icon: '🗺️', component: MapSection },
     { id: 'matches', label: 'Matches', icon: '💕', component: MatchesSection },
     { id: 'chat', label: 'Chat', icon: '💬', component: ChatSection },
     { id: 'notifications', label: 'Notificações', icon: '🔔', component: NotificationsSection },

@@ -401,3 +401,14 @@
     font-size: 16px;
   }
 }
+
+/* Map Section Styles */
+.map-section {
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  min-height: calc(100vh - 60px) !important;
+  height: calc(100vh - 60px) !important;
+}

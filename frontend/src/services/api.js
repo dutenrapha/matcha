@@ -629,4 +629,28 @@ export const statusService = {
   }
 };
 
+// Serviços do mapa
+export const mapService = {
+  // Obter usuários para o mapa com filtros
+  getMapUsers: async (filters = {}) => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== null && value !== '') {
+        params.append(key, value);
+      }
+    });
+    
+    const response = await api.get(`/map/users?${params.toString()}`);
+    return response.data;
+  },
+
+  // Obter usuários próximos
+  getNearbyUsers: async (radiusKm = 10, limit = 50) => {
+    const response = await api.get('/map/users/nearby', {
+      params: { radius_km: radiusKm, limit }
+    });
+    return response.data;
+  }
+};
+
 export default api;

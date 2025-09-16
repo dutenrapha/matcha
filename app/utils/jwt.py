@@ -54,3 +54,37 @@ def get_jti_from_token(token: str) -> Optional[str]:
     if payload:
         return payload.get("jti")
     return None
+
+async def get_current_user_ws(websocket):
+    """Autentica usuário via WebSocket usando token JWT"""
+    from fastapi import HTTPException
+    
+    # Obter token do query parameter ou header
+    token = None
+    
+    # Tentar obter do query parameter
+    if websocket.query_params.get("token"):
+        token = websocket.query_params.get("token")
+    # Tentar obter do header Authorization
+    elif "authorization" in websocket.headers:
+        auth_header = websocket.headers["authorization"]
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+    
+    if not token:
+        raise HTTPException(status_code=401, detail="Token não fornecido")
+    
+    # Verificar token
+    payload = verify_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Token inválido")
+    
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Token inválido")
+    
+    return {
+        "user_id": int(user_id),
+        "email": payload.get("email"),
+        "username": payload.get("username")
+    }

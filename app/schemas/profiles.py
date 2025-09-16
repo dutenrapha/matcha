@@ -16,6 +16,9 @@ class ProfileCreate(BaseModel):
     photo3_url: Optional[str] = None
     photo4_url: Optional[str] = None
     photo5_url: Optional[str] = None
+    location_visible: Optional[bool] = True
+    show_exact_location: Optional[bool] = False
+    location_precision: Optional[int] = Field(1, ge=1, le=10, description="Location precision level (1=exact, 10=very approximate)")
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -50,6 +53,9 @@ class ProfileOut(BaseModel):
     photo3_url: Optional[str]
     photo4_url: Optional[str]
     photo5_url: Optional[str]
+    location_visible: bool
+    show_exact_location: bool
+    location_precision: int
 
     class Config:
         schema_extra = {
@@ -82,6 +88,9 @@ class ProfileUpdate(BaseModel):
     photo3_url: Optional[str] = None
     photo4_url: Optional[str] = None
     photo5_url: Optional[str] = None
+    location_visible: Optional[bool] = None
+    show_exact_location: Optional[bool] = None
+    location_precision: Optional[int] = Field(None, ge=1, le=10, description="Location precision level (1=exact, 10=very approximate)")
 
     class Config:
         schema_extra = {

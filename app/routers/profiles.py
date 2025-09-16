@@ -22,19 +22,24 @@ async def create_profile(profile: ProfileCreate, request: Request, conn=Depends(
     await conn.execute("""
         INSERT INTO profiles 
         (user_id, bio, age, gender, sexual_pref, location, latitude, longitude, avatar_url,
-         photo1_url, photo2_url, photo3_url, photo4_url, photo5_url)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+         photo1_url, photo2_url, photo3_url, photo4_url, photo5_url,
+         location_visible, show_exact_location, location_precision)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
         ON CONFLICT (user_id) DO UPDATE 
         SET bio = EXCLUDED.bio, age = EXCLUDED.age, gender = EXCLUDED.gender, 
             sexual_pref = EXCLUDED.sexual_pref, location = EXCLUDED.location,
             latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude,
             avatar_url = EXCLUDED.avatar_url, photo1_url = EXCLUDED.photo1_url,
             photo2_url = EXCLUDED.photo2_url, photo3_url = EXCLUDED.photo3_url,
-            photo4_url = EXCLUDED.photo4_url, photo5_url = EXCLUDED.photo5_url
+            photo4_url = EXCLUDED.photo4_url, photo5_url = EXCLUDED.photo5_url,
+            location_visible = EXCLUDED.location_visible,
+            show_exact_location = EXCLUDED.show_exact_location,
+            location_precision = EXCLUDED.location_precision
     """, profile.user_id, profile.bio, profile.age, profile.gender, profile.sexual_pref,
          city, lat, lon, profile.avatar_url,
          profile.photo1_url, profile.photo2_url, profile.photo3_url, 
-         profile.photo4_url, profile.photo5_url)
+         profile.photo4_url, profile.photo5_url,
+         profile.location_visible, profile.show_exact_location, profile.location_precision)
     
     return {
         "message": "Profile saved successfully",
@@ -134,6 +139,9 @@ async def update_profile(user_id: int, profile_update: ProfileUpdate, conn=Depen
         ("photo3_url", profile_update.photo3_url),
         ("photo4_url", profile_update.photo4_url),
         ("photo5_url", profile_update.photo5_url),
+        ("location_visible", profile_update.location_visible),
+        ("show_exact_location", profile_update.show_exact_location),
+        ("location_precision", profile_update.location_precision),
     ]
     
     for field_name, field_value in fields:
