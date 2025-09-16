@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { profileService, preferencesService, tagsService } from '../services/api';
+import PhotoGallery from './PhotoGallery';
+import ImageEditor from './ImageEditor';
 import './ProfileEdit.css';
 
 const ProfileEdit = () => {
@@ -47,6 +49,40 @@ const ProfileEdit = () => {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
+  // Estados do editor de imagens
+  const [editingPhoto, setEditingPhoto] = useState(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [photos, setPhotos] = useState([]);
+
+  // Converter fotos do formato antigo para o novo formato
+  const convertPhotosToNewFormat = (profileData) => {
+    const photos = [];
+    for (let i = 1; i <= 5; i++) {
+      const photoUrl = profileData[`photo${i}_url`];
+      if (photoUrl) {
+        photos.push({
+          id: i,
+          url: photoUrl,
+          isAvatar: profileData.avatar_url === photoUrl,
+          order: i - 1
+        });
+      }
+    }
+    return photos;
+  };
+
+  // Converter fotos do novo formato para o formato antigo
+  const convertPhotosToOldFormat = (photos) => {
+    const profileData = {};
+    photos.forEach((photo, index) => {
+      profileData[`photo${index + 1}_url`] = photo.url;
+      if (photo.isAvatar) {
+        profileData.avatar_url = photo.url;
+      }
+    });
+    return profileData;
+  };
+
   // Carregar dados iniciais
   useEffect(() => {
     loadProfileData();
@@ -62,6 +98,9 @@ const ProfileEdit = () => {
       try {
         const profileData = await profileService.getProfile(user.user_id);
         setProfile(prev => ({ ...prev, ...profileData }));
+        // Converter fotos para o novo formato
+        const convertedPhotos = convertPhotosToNewFormat(profileData);
+        setPhotos(convertedPhotos);
       } catch (err) {
         console.log('Perfil não encontrado, será criado um novo');
       }
@@ -127,7 +166,7 @@ const ProfileEdit = () => {
       setSuccess('');
 
       // Validar dados obrigatórios
-      if (!profile.photo1_url) {
+      if (photos.length === 0) {
         setError('Pelo menos uma foto é obrigatória');
         return;
       }
@@ -330,6 +369,57 @@ const ProfileEdit = () => {
     }
   };
 
+  // Handlers para a nova galeria de fotos
+  const handlePhotosChange = (newPhotos) => {
+    setPhotos(newPhotos);
+    // Atualizar o perfil com as fotos no formato antigo
+    const photoData = convertPhotosToOldFormat(newPhotos);
+    setProfile(prev => ({ ...prev, ...photoData }));
+  };
+
+  const handleEditPhoto = (photo) => {
+    setEditingPhoto(photo);
+    setIsEditorOpen(true);
+  };
+
+  const handleSaveEditedPhoto = (editedImageUrl) => {
+    const updatedPhotos = photos.map(photo => 
+      photo.id === editingPhoto.id 
+        ? { ...photo, url: editedImageUrl }
+        : photo
+    );
+    setPhotos(updatedPhotos);
+    
+    // Atualizar o perfil
+    const photoData = convertPhotosToOldFormat(updatedPhotos);
+    setProfile(prev => ({ ...prev, ...photoData }));
+    
+    setIsEditorOpen(false);
+    setEditingPhoto(null);
+    setSuccess('Foto editada com sucesso!');
+    setTimeout(() => setSuccess(''), 2000);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditorOpen(false);
+    setEditingPhoto(null);
+  };
+
+  const handleSetAvatarFromGallery = (photoId) => {
+    const updatedPhotos = photos.map(photo => ({
+      ...photo,
+      isAvatar: photo.id === photoId
+    }));
+    setPhotos(updatedPhotos);
+    
+    // Atualizar o perfil
+    const photoData = convertPhotosToOldFormat(updatedPhotos);
+    setProfile(prev => ({ ...prev, ...photoData }));
+    
+    setSuccess('Avatar atualizado com sucesso!');
+    setTimeout(() => setSuccess(''), 2000);
+  };
+
   if (loading) {
     return (
       <div className="profile-edit-loading">
@@ -458,90 +548,13 @@ const ProfileEdit = () => {
 
         {/* Fotos */}
         <div className="form-section">
-          <h3>📸 Fotos</h3>
-          <p className="section-description">
-            Adicione até 5 fotos. A primeira será automaticamente definida como avatar. Você pode alterar depois.
-          </p>
-          
-          <div className="photos-grid">
-            {[1, 2, 3, 4, 5].map((num) => (
-              <div key={num} className="photo-upload">
-                <div 
-                  className={`photo-drop-zone ${dragOver ? 'drag-over' : ''} ${selectedAvatar === num ? 'selected-avatar' : ''}`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, `photo${num}_url`)}
-                  onClick={() => document.getElementById(`file-input-${num}`).click()}
-                >
-                  {profile[`photo${num}_url`] ? (
-                    <div className="photo-preview">
-                      <img src={profile[`photo${num}_url`]} alt={`Foto ${num}`} />
-                      <button
-                        type="button"
-                        className="remove-photo"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleProfileChange(`photo${num}_url`, '');
-                          // Se era o avatar, limpar avatar
-                          if (selectedAvatar === num) {
-                            setProfile(prev => ({ ...prev, avatar_url: '' }));
-                            setSelectedAvatar(1);
-                          }
-                        }}
-                      >
-                        ✕
-                      </button>
-                      {selectedAvatar === num && (
-                        <div className="avatar-badge">
-                          <span>👑</span>
-                          <small>Avatar</small>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="photo-placeholder">
-                      <span>📷</span>
-                      <small>Clique ou arraste uma foto aqui</small>
-                      <div className="upload-hint">Foto {num}</div>
-                    </div>
-                  )}
-                </div>
-                
-                <input
-                  type="file"
-                  id={`file-input-${num}`}
-                  accept="image/*"
-                  onChange={(e) => handleFileInputChange(e, `photo${num}_url`)}
-                  style={{ display: 'none' }}
-                />
-
-                {/* Botão para definir como avatar */}
-                {profile[`photo${num}_url`] && selectedAvatar !== num && (
-                  <button
-                    type="button"
-                    className="set-avatar-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSetAvatar(num);
-                    }}
-                  >
-                    👑 Definir como Avatar
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Preview do avatar atual */}
-          {profile.avatar_url && (
-            <div className="avatar-preview-section">
-              <h4>👑 Seu Avatar Atual</h4>
-              <div className="avatar-preview">
-                <img src={profile.avatar_url} alt="Avatar preview" />
-                <p>Esta é a foto que outros usuários verão primeiro</p>
-              </div>
-            </div>
-          )}
+          <PhotoGallery
+            photos={photos}
+            onPhotosChange={handlePhotosChange}
+            maxPhotos={5}
+            onEditPhoto={handleEditPhoto}
+            onSetAvatar={handleSetAvatarFromGallery}
+          />
         </div>
 
         {/* Tags/Interesses */}
@@ -654,6 +667,14 @@ const ProfileEdit = () => {
           </button>
         </div>
       </div>
+
+      {/* Editor de Imagens */}
+      <ImageEditor
+        imageUrl={editingPhoto?.url}
+        onSave={handleSaveEditedPhoto}
+        onCancel={handleCancelEdit}
+        isOpen={isEditorOpen}
+      />
     </div>
   );
 };
