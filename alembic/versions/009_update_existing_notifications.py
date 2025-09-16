@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '009_update_existing_notifications'
-down_revision = '008_add_related_user'
+down_revision = '008_add_related_user_to_notifications'
 branch_labels = None
 depends_on = None
 

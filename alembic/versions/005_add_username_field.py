@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '005_add_username_field'
-down_revision = '004_fix_swipe_trigger'
+down_revision = '004_fix_swipe_trigger_to_create_matches'
 branch_labels = None
 depends_on = None
 
