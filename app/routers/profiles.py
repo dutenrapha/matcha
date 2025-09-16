@@ -52,7 +52,10 @@ async def create_profile(profile: ProfileCreate, request: Request, conn=Depends(
 async def get_profile(user_id: int, conn=Depends(get_connection)):
     """Obter perfil por user_id"""
     profile = await conn.fetchrow("""
-        SELECT * FROM profiles WHERE user_id = $1
+        SELECT p.*, u.fame_rating 
+        FROM profiles p 
+        JOIN users u ON p.user_id = u.user_id 
+        WHERE p.user_id = $1
     """, user_id)
     
     if not profile:

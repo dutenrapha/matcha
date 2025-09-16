@@ -59,38 +59,79 @@ const HomeSection = ({ user }) => {
     loadStats();
   }, [user?.user_id]);
 
+  // Função para determinar o nível de fama
+  const getFameLevel = (rating) => {
+    if (rating >= 100) return { level: 'Lenda', emoji: '👑', color: '#FFD700' };
+    if (rating >= 50) return { level: 'Popular', emoji: '⭐', color: '#FF6B6B' };
+    if (rating >= 20) return { level: 'Conhecido', emoji: '🌟', color: '#4ECDC4' };
+    if (rating >= 10) return { level: 'Emergente', emoji: '✨', color: '#45B7D1' };
+    if (rating >= 5) return { level: 'Iniciante', emoji: '🌱', color: '#96CEB4' };
+    return { level: 'Novato', emoji: '🌿', color: '#DDA0DD' };
+  };
+
+  const fameInfo = getFameLevel(stats.fameRating);
+
   return (
     <div className="section-content">
       <h2>🏠 Dashboard</h2>
-      <p>Bem-vindo ao Matcha! Aqui você pode ver um resumo da sua atividade.</p>
+      <p>Bem-vindo ao Matcha! Aqui você pode ver um resumo da sua atividade e seu índice de fama.</p>
       
       {/* Status Online Manager */}
       {user && <OnlineStatusManager userId={user.user_id} />}
       
-      <div className="stats-grid">
-        <div className="stat-card">
-          <h3>Fame Rating</h3>
-          <p className="stat-value">
-            {loading ? '...' : stats.fameRating}
-          </p>
+      {/* Fame Rating Card - Destaque especial */}
+      <div className="fame-card">
+        <div className="fame-header">
+          <div className="fame-icon" style={{ color: fameInfo.color }}>
+            {fameInfo.emoji}
+          </div>
+          <div className="fame-info">
+            <h3>Índice de Fama</h3>
+            <p className="fame-level" style={{ color: fameInfo.color }}>
+              {fameInfo.level}
+            </p>
+          </div>
         </div>
+        <div className="fame-rating">
+          <span className="fame-value">
+            {loading ? '...' : stats.fameRating}
+          </span>
+          <span className="fame-label">pontos</span>
+        </div>
+        <div className="fame-description">
+          <p>Seu índice de fama é calculado baseado em:</p>
+          <ul>
+            <li>✨ <strong>Likes recebidos:</strong> +1 ponto cada</li>
+            <li>💕 <strong>Matches:</strong> +3 pontos cada</li>
+            <li>👁️ <strong>Visualizações:</strong> +0.5 pontos cada</li>
+            <li>📝 <strong>Perfil completo:</strong> +5 pontos</li>
+            <li>⚠️ <strong>Reports:</strong> -5 pontos cada</li>
+            <li>🚫 <strong>Bloqueios:</strong> -2 pontos cada</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div className="stats-grid">
         <div className="stat-card">
           <h3>Visualizações</h3>
           <p className="stat-value">
             {loading ? '...' : stats.views}
           </p>
+          <p className="stat-subtitle">Perfis que te viram</p>
         </div>
         <div className="stat-card">
           <h3>Likes Recebidos</h3>
           <p className="stat-value">
             {loading ? '...' : stats.likesReceived}
           </p>
+          <p className="stat-subtitle">Pessoas que te curtiram</p>
         </div>
         <div className="stat-card">
           <h3>Matches</h3>
           <p className="stat-value">
             {loading ? '...' : stats.matches}
           </p>
+          <p className="stat-subtitle">Conexões mútuas</p>
         </div>
       </div>
     </div>

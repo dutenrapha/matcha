@@ -56,6 +56,7 @@ class ProfileOut(BaseModel):
     location_visible: bool
     show_exact_location: bool
     location_precision: int
+    fame_rating: Optional[int] = 0
 
     class Config:
         schema_extra = {
