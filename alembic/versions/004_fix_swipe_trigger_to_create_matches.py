@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '004_fix_swipe_trigger_to_create_matches'
+revision = '004_fix_swipe_trigger'
 down_revision = '003_fix_ambiguous_column'
 branch_labels = None
 depends_on = None

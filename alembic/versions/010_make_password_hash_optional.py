@@ -9,8 +9,8 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '010_make_password_hash_optional'
-down_revision = '009_update_existing_notifications'
+revision = '010_password_optional'
+down_revision = '009_update_notifications'
 branch_labels = None
 depends_on = None
 

@@ -9,7 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '006_fix_profile_views_created_at'
+revision = '006_fix_profile_views'
 down_revision = '005_add_username_field'
 branch_labels = None
 depends_on = None

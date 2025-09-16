@@ -9,8 +9,8 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '008_add_related_user_to_notifications'
-down_revision = '007_fix_duplicate_profile_views'
+revision = '008_add_related_user'
+down_revision = '007_fix_duplicate_views'
 branch_labels = None
 depends_on = None
 
