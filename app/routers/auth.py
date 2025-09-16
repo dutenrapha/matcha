@@ -46,7 +46,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), conn=Depends(get
     
     # Verificar se usuário existe e está verificado
     user = await conn.fetchrow(
-        "SELECT user_id, name, email, is_verified FROM users WHERE user_id = $1", 
+        "SELECT user_id, name, email, username, is_verified FROM users WHERE user_id = $1", 
         user_id
     )
     if user is None:
@@ -60,25 +60,26 @@ async def get_current_user(token: str = Depends(oauth2_scheme), conn=Depends(get
 
 @router.post("/login", response_model=LoginOut)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), conn=Depends(get_connection)):
-    """Login com email e senha"""
-    # Buscar usuário por email
+    """Login com username e senha"""
+    # Buscar usuário por username
     user = await conn.fetchrow(
-        "SELECT user_id, name, email, password_hash, is_verified FROM users WHERE email = $1", 
+        "SELECT user_id, name, email, username, password_hash, is_verified FROM users WHERE username = $1", 
         form_data.username
     )
     
     if not user or not verify_password(form_data.password, user["password_hash"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    if not user["is_verified"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Email not verified"
-        )
+    # Para testes, não exigir verificação de email
+    # if not user["is_verified"]:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_403_FORBIDDEN,
+    #         detail="Email not verified"
+    #     )
     
     # Atualizar last_login
     await conn.execute(

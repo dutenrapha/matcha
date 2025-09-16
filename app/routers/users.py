@@ -22,16 +22,21 @@ async def create_user(user: UserCreate, conn=Depends(get_connection)):
 
     try:
         result = await conn.fetchrow("""
-            INSERT INTO users (name, email, password_hash)
-            VALUES ($1, $2, $3)
+            INSERT INTO users (name, email, username, password_hash)
+            VALUES ($1, $2, $3, $4)
             RETURNING user_id
-        """, user.name, user.email, hashed)
+        """, user.name, user.email, user.username, hashed)
         return {
             "message": "User created successfully",
             "user_id": result["user_id"]
         }
-    except asyncpg.UniqueViolationError:
-        raise HTTPException(status_code=400, detail="Email already exists")
+    except asyncpg.UniqueViolationError as e:
+        if "email" in str(e):
+            raise HTTPException(status_code=400, detail="Email already exists")
+        elif "username" in str(e):
+            raise HTTPException(status_code=400, detail="Username already exists")
+        else:
+            raise HTTPException(status_code=400, detail="User already exists")
 
 @router.get("/search", response_model=List[SearchResult])
 async def advanced_search(

@@ -4,7 +4,7 @@ import './Auth.css';
 
 const Login = ({ onSwitchToSignup }) => {
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: '',
   });
   const [error, setError] = useState('');
@@ -24,7 +24,7 @@ const Login = ({ onSwitchToSignup }) => {
     setLoading(true);
     setError('');
 
-    const result = await login(formData.email, formData.password);
+    const result = await login(formData.username, formData.password);
     
     if (!result.success) {
       setError(result.error);
@@ -47,15 +47,15 @@ const Login = ({ onSwitchToSignup }) => {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="username">Username</label>
             <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
               onChange={handleChange}
               required
-              placeholder="seu@email.com"
+              placeholder="Seu username"
             />
           </div>
 

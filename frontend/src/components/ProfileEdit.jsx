@@ -181,9 +181,9 @@ const ProfileEdit = () => {
       return;
     }
 
-    // Verificar caracteres especiais
-    if (!/^[a-záàâãéèêíìîóòôõúùûç\s]+$/i.test(cleanTagName)) {
-      setError('Tag deve conter apenas letras e espaços');
+    // Verificar caracteres especiais - permitir letras, números, espaços e alguns símbolos comuns
+    if (!/^[a-záàâãéèêíìîóòôõúùûç0-9\s\+\-\#\.]+$/i.test(cleanTagName)) {
+      setError('Tag deve conter apenas letras, números, espaços e símbolos básicos (+, -, #, .)');
       return;
     }
 

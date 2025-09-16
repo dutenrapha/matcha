@@ -48,9 +48,9 @@ api.interceptors.response.use(
 // Serviços de autenticação
 export const authService = {
   // Login
-  login: async (email, password) => {
+  login: async (username, password) => {
     const formData = new FormData();
-    formData.append('username', email);
+    formData.append('username', username);
     formData.append('password', password);
     
     const response = await api.post('/auth/login', formData, {

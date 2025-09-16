@@ -42,9 +42,9 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (username, password) => {
     try {
-      const response = await authService.login(email, password);
+      const response = await authService.login(username, password);
       const { access_token } = response;
 
       // Armazenar token no localStorage PRIMEIRO
@@ -67,10 +67,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (name, email, password) => {
+  const signup = async (name, email, username, password) => {
     try {
       // Criar usuário
-      const createResponse = await userService.createUser({ name, email, password });
+      const createResponse = await userService.createUser({ name, email, username, password });
       
       // Verificar se o usuário foi criado com sucesso e obter o ID
       if (createResponse.user_id) {

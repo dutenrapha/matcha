@@ -6,6 +6,7 @@ const Signup = ({ onSwitchToLogin }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    username: '',
     password: '',
     confirmPassword: '',
   });
@@ -48,7 +49,7 @@ const Signup = ({ onSwitchToLogin }) => {
       return;
     }
 
-    const result = await signup(formData.name, formData.email, formData.password);
+    const result = await signup(formData.name, formData.email, formData.username, formData.password);
     
     if (result.success) {
       setSuccess(result.message);
@@ -56,6 +57,7 @@ const Signup = ({ onSwitchToLogin }) => {
       setFormData({
         name: '',
         email: '',
+        username: '',
         password: '',
         confirmPassword: '',
       });
@@ -112,6 +114,19 @@ const Signup = ({ onSwitchToLogin }) => {
           </div>
 
           <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+              placeholder="seu_username"
+            />
+          </div>
+
+          <div className="form-group">
             <label htmlFor="password">Senha</label>
             <input
               type="password"
@@ -120,7 +135,7 @@ const Signup = ({ onSwitchToLogin }) => {
               value={formData.password}
               onChange={handleChange}
               required
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mínimo 8 caracteres"
             />
           </div>
 

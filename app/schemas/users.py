@@ -4,6 +4,7 @@ from typing import Optional
 class UserCreate(BaseModel):
     name: str
     email: EmailStr
+    username: str
     password: str
 
     model_config = ConfigDict(
@@ -11,6 +12,7 @@ class UserCreate(BaseModel):
             "example": {
                 "name": "Alice",
                 "email": "alice@example.com",
+                "username": "alice",
                 "password": "StrongPass123!"
             }
         }
@@ -20,6 +22,7 @@ class UserOut(BaseModel):
     user_id: int
     name: str
     email: EmailStr
+    username: str
     fame_rating: Optional[int] = 0
     is_verified: Optional[bool] = False
 
@@ -29,6 +32,7 @@ class UserOut(BaseModel):
                 "user_id": 1,
                 "name": "Alice",
                 "email": "alice@example.com",
+                "username": "alice",
                 "fame_rating": 42,
                 "is_verified": True
             }

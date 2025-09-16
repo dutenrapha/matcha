@@ -2,13 +2,13 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
 
 class LoginIn(BaseModel):
-    email: EmailStr
+    username: str
     password: str
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "email": "alice@example.com",
+                "username": "alice",
                 "password": "StrongPass123!"
             }
         }
