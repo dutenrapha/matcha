@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { profileService, tagsService, swipeService } from '../services/api';
 import SwipeCard from './SwipeCard';
+import ProfileDetail from './ProfileDetail';
 import './DiscoverProfiles.css';
 
 const DiscoverProfiles = () => {
@@ -13,6 +14,8 @@ const DiscoverProfiles = () => {
   const [userTags, setUserTags] = useState([]);
   const [swipeFeedback, setSwipeFeedback] = useState('');
   const [isSwiping, setIsSwiping] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [isProfileDetailOpen, setIsProfileDetailOpen] = useState(false);
 
   const loadProfiles = useCallback(async () => {
     try {
@@ -60,6 +63,16 @@ const DiscoverProfiles = () => {
 
   const handleRefresh = () => {
     loadProfiles();
+  };
+
+  const handleViewProfile = (profile) => {
+    setSelectedProfile(profile);
+    setIsProfileDetailOpen(true);
+  };
+
+  const handleCloseProfileDetail = () => {
+    setIsProfileDetailOpen(false);
+    setSelectedProfile(null);
   };
 
   const handleSwipe = async (direction) => {
@@ -183,6 +196,7 @@ const DiscoverProfiles = () => {
                      currentUserId={user?.user_id}
                      onSwipe={handleSwipe}
                      swipeFeedback={swipeFeedback}
+                     onViewProfile={handleViewProfile}
                    />
                  </div>
                )}
@@ -198,6 +212,7 @@ const DiscoverProfiles = () => {
                    currentUserId={user?.user_id}
                    onSwipe={handleSwipe}
                    swipeFeedback={swipeFeedback}
+                   onViewProfile={handleViewProfile}
                  />
                )}
       </div>
@@ -216,6 +231,15 @@ const DiscoverProfiles = () => {
           </small>
         </div>
       </div>
+
+      {/* Modal de Visualização Detalhada */}
+      <ProfileDetail
+        profile={selectedProfile}
+        isOpen={isProfileDetailOpen}
+        onClose={handleCloseProfileDetail}
+        isMatch={false}
+        currentUserId={user?.user_id}
+      />
     </div>
   );
 };

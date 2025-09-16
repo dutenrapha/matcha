@@ -8,7 +8,8 @@ const SwipeCard = ({
   onSwipe, 
   onNext, 
   swipeFeedback,
-  currentUserId 
+  currentUserId,
+  onViewProfile 
 }) => {
   
   const [profileTags, setProfileTags] = useState([]);
@@ -315,6 +316,21 @@ const SwipeCard = ({
               </div>
             </div>
           )}
+
+          {/* Botão para ver perfil completo */}
+          <div className="swipe-card-actions">
+            <button 
+              className="view-profile-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onViewProfile) {
+                  onViewProfile(profile);
+                }
+              }}
+            >
+              👁️ Ver Perfil Completo
+            </button>
+          </div>
         </div>
 
       </div>

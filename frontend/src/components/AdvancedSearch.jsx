@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { searchService, tagsService, swipeService } from '../services/api';
 import SwipeCard from './SwipeCard';
+import ProfileDetail from './ProfileDetail';
 import './AdvancedSearch.css';
 
 const AdvancedSearch = () => {
@@ -13,6 +14,8 @@ const AdvancedSearch = () => {
   const [userTags, setUserTags] = useState([]);
   const [swipeFeedback, setSwipeFeedback] = useState('');
   const [isSwiping, setIsSwiping] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [isProfileDetailOpen, setIsProfileDetailOpen] = useState(false);
 
   // Filtros de busca
   const [filters, setFilters] = useState({
@@ -135,6 +138,16 @@ const AdvancedSearch = () => {
       setSearchResults([]);
       setCurrentIndex(0);
     }
+  };
+
+  const handleViewProfile = (profile) => {
+    setSelectedProfile(profile);
+    setIsProfileDetailOpen(true);
+  };
+
+  const handleCloseProfileDetail = () => {
+    setIsProfileDetailOpen(false);
+    setSelectedProfile(null);
   };
 
   // Swipe
@@ -351,6 +364,7 @@ const AdvancedSearch = () => {
                   onNext={handleNextProfile}
                   onSwipe={handleSwipe}
                   swipeFeedback={swipeFeedback}
+                  onViewProfile={handleViewProfile}
                 />
               </div>
             )}
@@ -364,6 +378,7 @@ const AdvancedSearch = () => {
                 onNext={handleNextProfile}
                 onSwipe={handleSwipe}
                 swipeFeedback={swipeFeedback}
+                onViewProfile={handleViewProfile}
               />
             )}
           </div>
@@ -376,6 +391,15 @@ const AdvancedSearch = () => {
           <p>Tente ajustar os filtros para encontrar mais pessoas.</p>
         </div>
       )}
+
+      {/* Modal de Visualização Detalhada */}
+      <ProfileDetail
+        profile={selectedProfile}
+        isOpen={isProfileDetailOpen}
+        onClose={handleCloseProfileDetail}
+        isMatch={false}
+        currentUserId={user?.user_id}
+      />
     </div>
   );
 };
