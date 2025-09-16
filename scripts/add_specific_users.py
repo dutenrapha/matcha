@@ -27,7 +27,7 @@ async def add_specific_users():
                 "sexual_pref": "female",  # Bob gosta de mulheres
                 "age": 28,
                 "bio": "Olá! Sou o Bob, gosto de esportes e tecnologia. Procuro uma mulher especial para compartilhar bons momentos.",
-                "fame_rating": 75
+                "fame_rating": 0
             },
             {
                 "name": "Alice",
@@ -37,7 +37,7 @@ async def add_specific_users():
                 "sexual_pref": "male",  # Alice gosta de homens
                 "age": 25,
                 "bio": "Oi! Sou a Alice, adoro música, arte e viagens. Estou procurando um homem interessante para conhecer.",
-                "fame_rating": 80
+                "fame_rating": 0
             },
             {
                 "name": "Carol",
@@ -47,7 +47,7 @@ async def add_specific_users():
                 "sexual_pref": "both",  # Carol gosta de ambos
                 "age": 30,
                 "bio": "Olá! Sou a Carol, sou uma pessoa aberta e gosto de conhecer pessoas interessantes, independente do gênero.",
-                "fame_rating": 85
+                "fame_rating": 0
             }
         ]
         
@@ -104,6 +104,9 @@ async def add_specific_users():
                     await conn.execute("""
                         INSERT INTO user_tags (user_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING
                     """, user_id, tag_id)
+            
+            # Calcular fame rating inicial (bônus por perfil completo)
+            await conn.execute("SELECT update_fame_rating($1)", user_id)
             
             print(f"✅ Usuário {user_data['name']} criado com sucesso!")
             print(f"   📧 Email: {user_data['email']}")
